@@ -2,15 +2,17 @@ $(document).ready(function() {
     const STORAGE_KEY = 'contacts';
     const ACCESS_HISTORY_KEY = 'contactAccessHistory';
     const STARRED_KEY = 'starredContacts';
+    const EMERGENCY_KEY = 'emergencyContacts';
     let editingId = null;
     let selectedLocationFilter = null;
 
     // Initialize the app
     loadContacts();
     displayFrequentlyAccessed();
+    displayUpcomingBirthdays();
+    displayEmergencyContacts();
     displayStarredContacts();
     displayLocationFilter();
-    displayUpcomingBirthdays();
 
     // Event Listeners
     $('#btnAdd').on('click', openAddModal);
@@ -215,6 +217,10 @@ $(document).ready(function() {
                 const starClass = isStarred ? 'btn-star active' : 'btn-star';
                 const starText = isStarred ? '★' : '☆';
                 
+                const isEmergency = isContactEmergency(contact.id);
+                const emergencyClass = isEmergency ? 'btn-emergency active' : 'btn-emergency';
+                const emergencyText = isEmergency ? '🚨' : '⚠️';
+                
                 const contactHtml = `
                     <div class="contact-item">
                         <div class="contact-avatar-wrapper">
@@ -226,6 +232,7 @@ $(document).ready(function() {
                         </div>
                         <div class="contact-actions">
                             <button class="${starClass}" data-id="${contact.id}" title="Star">${starText}</button>
+                            <button class="${emergencyClass}" data-id="${contact.id}" title="Emergency">${emergencyText}</button>
                             <button class="btn-edit" data-id="${contact.id}">Edit</button>
                             <button class="btn-delete" data-id="${contact.id}">Delete</button>
                         </div>
@@ -237,6 +244,12 @@ $(document).ready(function() {
                 contactsList.find('.btn-star[data-id="' + contact.id + '"]').on('click', function(e) {
                     e.preventDefault();
                     toggleStar(contact.id);
+                });
+                
+                // Emergency button listener
+                contactsList.find('.btn-emergency[data-id="' + contact.id + '"]').on('click', function(e) {
+                    e.preventDefault();
+                    toggleEmergency(contact.id);
                 });
             });
         });
@@ -481,6 +494,79 @@ $(document).ready(function() {
 
         starredContainer.show();
     }
+
+    // Toggle Emergency Contact
+    function toggleEmergency(contactId) {
+        let emergency = JSON.parse(localStorage.getItem(EMERGENCY_KEY) || '[]');
+        
+        if (emergency.includes(contactId)) {
+            emergency = emergency.filter(id => id !== contactId);
+        } else {
+            emergency.push(contactId);
+        }
+        
+        localStorage.setItem(EMERGENCY_KEY, JSON.stringify(emergency));
+        displayEmergencyContacts();
+        loadContacts();
+    }
+
+    function isContactEmergency(contactId) {
+        const emergency = JSON.parse(localStorage.getItem(EMERGENCY_KEY) || '[]');
+        return emergency.includes(contactId);
+    }
+
+    function displayEmergencyContacts() {
+        const contacts = getContactsFromStorage();
+        const emergency = JSON.parse(localStorage.getItem(EMERGENCY_KEY) || '[]');
+        
+        const emergencyContacts = contacts.filter(c => emergency.includes(c.id));
+        const emergencyContainer = $('#emergencyContainer');
+        const emergencyList = $('#emergencyList');
+        
+        emergencyList.empty();
+        
+        if (emergencyContacts.length === 0) {
+            emergencyContainer.hide();
+            return;
+        }
+
+        emergencyContacts.forEach(contact => {
+            const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder">👤</div>';
+            let detailsHtml = `<div class="emergency-phone">${escapeHtml(contact.phone)}</div>`;
+            if (contact.phone2) {
+                detailsHtml += `<div class="emergency-phone2">${escapeHtml(contact.phone2)}</div>`;
+            }
+
+            const contactHtml = `
+                <div class="emergency-contact-item">
+                    <div class="emergency-avatar">
+                        ${profilePic}
+                    </div>
+                    <div class="emergency-info">
+                        <div class="emergency-name">${escapeHtml(contact.name)}</div>
+                        ${detailsHtml}
+                    </div>
+                    <div class="emergency-actions">
+                        <button class="btn-remove-emergency" data-id="${contact.id}" title="Remove from emergency">✕</button>
+                        <button class="btn-edit" data-id="${contact.id}">Edit</button>
+                    </div>
+                </div>
+            `;
+            emergencyList.append(contactHtml);
+        });
+
+        // Attach listeners
+        emergencyList.find('.btn-remove-emergency').on('click', function() {
+            toggleEmergency(parseInt($(this).data('id')));
+        });
+
+        emergencyList.find('.btn-edit').on('click', function() {
+            openEditModal(parseInt($(this).data('id')));
+        });
+
+        emergencyContainer.show();
+    }
+
 
     // Display upcoming birthdays in next 5 days
     function displayUpcomingBirthdays() {

@@ -384,6 +384,132 @@ body {
     color: #909090;
 }
 
+/* Emergency Contacts Section */
+.emergency-section {
+    background-color: #4a2a2a;
+    border-top: 2px solid #ff4444;
+    padding: 15px 20px;
+    display: none;
+}
+
+.emergency-header {
+    margin-bottom: 12px;
+}
+
+.emergency-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ff6666;
+    letter-spacing: 0.5px;
+}
+
+.emergency-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.emergency-contact-item {
+    display: flex;
+    align-items: center;
+    background-color: #3a1a1a;
+    border: 2px solid #ff4444;
+    border-radius: 6px;
+    padding: 12px;
+    transition: all 0.2s ease;
+}
+
+.emergency-contact-item:hover {
+    background-color: #452525;
+    border-color: #ff6666;
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.3);
+}
+
+.emergency-avatar {
+    margin-right: 12px;
+    min-width: 40px;
+}
+
+.emergency-avatar img,
+.emergency-avatar .contact-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ff4444;
+}
+
+.emergency-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.emergency-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ff6666;
+    margin-bottom: 3px;
+}
+
+.emergency-phone {
+    font-size: 12px;
+    color: #ff9999;
+    margin-bottom: 2px;
+}
+
+.emergency-phone2 {
+    font-size: 12px;
+    color: #ff8888;
+}
+
+.emergency-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: 10px;
+}
+
+.btn-emergency {
+    background-color: transparent;
+    color: #888;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-emergency:hover {
+    color: #ff4444;
+    transform: scale(1.15);
+}
+
+.btn-emergency.active {
+    color: #ff4444;
+}
+
+.btn-remove-emergency {
+    background-color: #ff4444;
+    color: #ffffff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-remove-emergency:hover {
+    background-color: #ff6666;
+    transform: scale(1.1);
+}
+
+.btn-remove-emergency:active {
+    transform: scale(0.98);
+}
+
 .frequently-accessed-list {
     display: flex;
     gap: 10px;
