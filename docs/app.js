@@ -10,6 +10,7 @@ $(document).ready(function() {
     displayFrequentlyAccessed();
     displayStarredContacts();
     displayLocationFilter();
+    displayUpcomingBirthdays();
 
     // Event Listeners
     $('#btnAdd').on('click', openAddModal);
@@ -55,6 +56,7 @@ $(document).ready(function() {
             $('#contactPhone2').val(contact.phone2 || '');
             $('#contactEmail').val(contact.email || '');
             $('#contactLocation').val(contact.location || '');
+            $('#contactBirthday').val(contact.birthday || '');
             if (contact.picture) {
                 $('#profilePreview').attr('src', contact.picture);
             } else {
@@ -81,6 +83,7 @@ $(document).ready(function() {
         const phone2 = $('#contactPhone2').val().trim();
         const email = $('#contactEmail').val().trim();
         const location = $('#contactLocation').val().trim();
+        const birthday = $('#contactBirthday').val();
         const picture = $('#contactPicture')[0].files[0];
 
         if (!name || !phone) {
@@ -103,13 +106,13 @@ $(document).ready(function() {
             // Keep existing picture if editing
             const existingContact = contacts.find(c => c.id === editingId);
             pictureData = existingContact ? existingContact.picture : null;
-            saveContactData(name, phone, phone2, email, location, pictureData, contacts);
+            saveContactData(name, phone, phone2, email, location, birthday, pictureData, contacts);
         } else {
-            saveContactData(name, phone, phone2, email, location, pictureData, contacts);
+            saveContactData(name, phone, phone2, email, location, birthday, pictureData, contacts);
         }
     }
 
-    function saveContactData(name, phone, phone2, email, location, picture, contacts) {
+    function saveContactData(name, phone, phone2, email, location, birthday, picture, contacts) {
         if (editingId) {
             // Update existing contact
             const index = contacts.findIndex(c => c.id === editingId);
@@ -121,6 +124,7 @@ $(document).ready(function() {
                     phone2: phone2,
                     email: email,
                     location: location,
+                    birthday: birthday,
                     picture: picture
                 };
             }
@@ -133,6 +137,7 @@ $(document).ready(function() {
                 phone2: phone2,
                 email: email,
                 location: location,
+                birthday: birthday,
                 picture: picture
             };
             contacts.push(newContact);
@@ -201,6 +206,9 @@ $(document).ready(function() {
                 }
                 if (contact.location) {
                     detailsHtml += `<div class="contact-location">📍 ${escapeHtml(contact.location)}</div>`;
+                }
+                if (contact.birthday) {
+                    detailsHtml += `<div class="contact-birthday">🎂 ${escapeHtml(contact.birthday)}</div>`;
                 }
                 
                 const isStarred = isContactStarred(contact.id);
@@ -463,6 +471,73 @@ $(document).ready(function() {
         });
 
         starredContainer.show();
+    }
+
+    // Display upcoming birthdays in next 5 days
+    function displayUpcomingBirthdays() {
+        const upcomingContainer = $('#upcomingBirthdaysContainer');
+        const upcomingList = $('#upcomingBirthdaysList');
+        upcomingList.empty();
+
+        const contacts = getContacts();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const upcomingBirthdays = [];
+
+        contacts.forEach(contact => {
+            if (contact.birthday) {
+                const [year, month, day] = contact.birthday.split('-');
+                const birthDate = new Date(year, parseInt(month) - 1, parseInt(day));
+
+                // Check if birthday is in the current year
+                let nextBirthday = new Date(today.getFullYear(), parseInt(month) - 1, parseInt(day));
+                if (nextBirthday < today) {
+                    // If birthday has passed this year, check next year
+                    nextBirthday = new Date(today.getFullYear() + 1, parseInt(month) - 1, parseInt(day));
+                }
+
+                const daysUntil = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
+
+                // Include birthdays within next 5 days
+                if (daysUntil >= 0 && daysUntil <= 5) {
+                    upcomingBirthdays.push({
+                        name: contact.name,
+                        id: contact.id,
+                        birthday: contact.birthday,
+                        daysUntil: daysUntil
+                    });
+                }
+            }
+        });
+
+        if (upcomingBirthdays.length > 0) {
+            // Sort by days until birthday
+            upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
+
+            upcomingBirthdays.forEach(bday => {
+                const daysText = bday.daysUntil === 0 ? '🎉 Today!' : `in ${bday.daysUntil} day${bday.daysUntil === 1 ? '' : 's'}`;
+                const html = `
+                    <div class="birthday-item">
+                        <div class="birthday-info">
+                            <div class="birthday-name">🎂 ${escapeHtml(bday.name)}</div>
+                            <div class="birthday-date">${escapeHtml(bday.birthday)} - ${daysText}</div>
+                        </div>
+                        <button class="btn-edit-bday" data-id="${bday.id}">Edit</button>
+                    </div>
+                `;
+                upcomingList.append(html);
+            });
+
+            // Add edit listener
+            upcomingList.find('.btn-edit-bday').on('click', function() {
+                openEditModal(parseInt($(this).data('id')));
+            });
+
+            upcomingContainer.show();
+        } else {
+            upcomingContainer.hide();
+        }
     }
 
     // Close modal when clicking outside of it

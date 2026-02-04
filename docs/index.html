@@ -29,6 +29,14 @@
             <div id="locationFilterList" class="location-filter-list"></div>
         </div>
 
+        <!-- Upcoming Birthdays -->
+        <div id="upcomingBirthdaysContainer" class="upcoming-birthdays-section" style="display: none;">
+            <div class="upcoming-birthdays-header">
+                <h3>🎂 Upcoming Birthdays (Next 5 Days)</h3>
+            </div>
+            <div id="upcomingBirthdaysList" class="upcoming-birthdays-list"></div>
+        </div>
+
         <!-- Starred Contacts -->
         <div id="starredContainer" class="starred-section" style="display: none;">
             <div class="starred-header">
@@ -89,6 +97,12 @@
                     <div class="form-group">
                         <label for="contactLocation">Location:</label>
                         <input type="text" id="contactLocation" placeholder="Enter location (optional)">
+                    </div>
+
+                    <!-- Birthday (Optional) -->
+                    <div class="form-group">
+                        <label for="contactBirthday">Birthday:</label>
+                        <input type="date" id="contactBirthday" placeholder="Select birthday (optional)">
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn-save">Save Contact</button>
