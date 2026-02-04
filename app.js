@@ -330,7 +330,7 @@ $(document).ready(function() {
     // Track Contact Access
     function recordContactAccess(contactId) {
         let history = JSON.parse(localStorage.getItem(ACCESS_HISTORY_KEY) || '{}');
-        history[contactId] = (history[contactId] || 0) + 1;
+        history[contactId] = new Date().toISOString();
         localStorage.setItem(ACCESS_HISTORY_KEY, JSON.stringify(history));
         displayFrequentlyAccessed();
     }
@@ -340,11 +340,11 @@ $(document).ready(function() {
         const contacts = getContactsFromStorage();
         const history = JSON.parse(localStorage.getItem(ACCESS_HISTORY_KEY) || '{}');
         
-        // Get contacts with access count > 0, sorted by count
+        // Get contacts with access history, sorted by most recent
         const frequentContacts = contacts
-            .filter(c => history[c.id] && history[c.id] > 0)
-            .map(c => ({...c, accessCount: history[c.id]}))
-            .sort((a, b) => b.accessCount - a.accessCount)
+            .filter(c => history[c.id])
+            .map(c => ({...c, lastAccessed: history[c.id]}))
+            .sort((a, b) => new Date(b.lastAccessed) - new Date(a.lastAccessed))
             .slice(0, 5); // Show top 5
 
         const container = $('#frequentlyAccessedContainer');
@@ -357,6 +357,14 @@ $(document).ready(function() {
 
         list.empty();
         frequentContacts.forEach(contact => {
+            const lastAccessDate = new Date(contact.lastAccessed);
+            const formattedDate = lastAccessDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
             const html = `
                 <div class="frequent-contact-item">
                     <div class="frequent-contact-info">
@@ -364,7 +372,7 @@ $(document).ready(function() {
                         <div class="frequent-contact-phone">${escapeHtml(contact.phone)}</div>
                     </div>
                     <div class="frequent-contact-meta">
-                        <span class="access-badge">${contact.accessCount}</span>
+                        <span class="last-accessed-badge">${formattedDate}</span>
                         <button class="btn-quick-edit" data-id="${contact.id}">Edit</button>
                     </div>
                 </div>
