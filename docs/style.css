@@ -1,0 +1,414 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #0f0f0f;
+    color: #e0e0e0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+.btn-add {
+    background-color: transparent;
+    color: #b0b0b0;
+    border: 1px solid #444;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+    background-color: #2a2a2a;
+    color: #ffffff;
+    border-color: #666;
+}
+
+.btn-add:active {
+    transform: scale(0.98);
+}
+
+/* Search Bar */
+.search-container {
+    position: relative;
+    padding: 15px 20px;
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #333;
+}
+
+.search-box {
+    width: 100%;
+    padding: 12px 40px 12px 16px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    font-size: 16px;
+    background-color: #252525;
+    color: #e0e0e0;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.search-box:focus {
+    border-color: #666;
+    background-color: #2a2a2a;
+}
+
+.search-box::placeholder {
+    color: #666;
+}
+
+.search-icon {
+    position: absolute;
+    right: 35px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    font-size: 18px;
+}
+
+/* Contacts Container */
+.contacts-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+.contacts-list {
+    padding: 0;
+}
+
+.empty-state {
+    text-align: center;
+    color: #555;
+    padding: 40px 20px;
+    font-size: 16px;
+}
+
+/* Contact Item */
+.contact-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #252525;
+    transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+    background-color: #252525;
+}
+
+.contact-item:active {
+    background-color: #2a2a2a;
+}
+
+.contact-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.contact-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.contact-phone {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 2px;
+}
+
+.contact-email {
+    font-size: 12px;
+    color: #666;
+}
+
+.contact-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 12px;
+}
+
+.btn-edit,
+.btn-delete {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-edit {
+    background-color: #444;
+    color: #e0e0e0;
+}
+
+.btn-edit:hover {
+    background-color: #555;
+    color: #ffffff;
+}
+
+.btn-delete {
+    background-color: #4a3a3a;
+    color: #d9534f;
+}
+
+.btn-delete:hover {
+    background-color: #5a4a4a;
+    color: #ff6b6b;
+}
+
+.btn-edit:active,
+.btn-delete:active {
+    transform: scale(0.98);
+}
+
+/* Alphabetical Section Header */
+.section-header {
+    background-color: #252525;
+    padding: 8px 20px;
+    font-weight: 600;
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal.show {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #1a1a1a;
+    padding: 30px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid #333;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.close {
+    color: #666;
+    float: right;
+    font-size: 28px;
+    font-weight: 300;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: #aaa;
+}
+
+#modalTitle {
+    margin-bottom: 20px;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+/* Form */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #e0e0e0;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #252525;
+    color: #e0e0e0;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    border-color: #666;
+    background-color: #2a2a2a;
+}
+
+.form-group input::placeholder {
+    color: #666;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.btn-save,
+.btn-cancel {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-save {
+    background-color: #444;
+    color: #ffffff;
+}
+
+.btn-save:hover {
+    background-color: #555;
+    transform: translateY(-1px);
+}
+
+.btn-save:active {
+    transform: translateY(0);
+}
+
+.btn-cancel {
+    background-color: #333;
+    color: #b0b0b0;
+}
+
+.btn-cancel:hover {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+}
+
+.btn-cancel:active {
+    transform: scale(0.98);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .header {
+        padding: 15px;
+    }
+
+    .header h1 {
+        font-size: 24px;
+    }
+
+    .btn-add {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .contact-item {
+        padding: 12px 15px;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+
+    .contact-actions {
+        gap: 6px;
+    }
+
+    .btn-edit,
+    .btn-delete {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+}
+
+/* Scrollbar Styling */
+.contacts-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.contacts-container::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+.contacts-container::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 3px;
+}
+
+.contacts-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
