@@ -484,67 +484,78 @@ $(document).ready(function() {
 
     // Display upcoming birthdays in next 5 days
     function displayUpcomingBirthdays() {
-        const upcomingContainer = $('#upcomingBirthdaysContainer');
-        const upcomingList = $('#upcomingBirthdaysList');
-        upcomingList.empty();
+        try {
+            const upcomingContainer = $('#upcomingBirthdaysContainer');
+            const upcomingList = $('#upcomingBirthdaysList');
+            upcomingList.empty();
 
-        const contacts = getContactsFromStorage();
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const upcomingBirthdays = [];
-
-        contacts.forEach(contact => {
-            if (contact.birthday) {
-                const [year, month, day] = contact.birthday.split('-');
-
-                // Check if birthday is in the current year
-                let nextBirthday = new Date(today.getFullYear(), parseInt(month) - 1, parseInt(day));
-                if (nextBirthday < today) {
-                    // If birthday has passed this year, check next year
-                    nextBirthday = new Date(today.getFullYear() + 1, parseInt(month) - 1, parseInt(day));
-                }
-
-                const daysUntil = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
-
-                // Include birthdays within next 5 days
-                if (daysUntil >= 0 && daysUntil <= 5) {
-                    upcomingBirthdays.push({
-                        name: contact.name,
-                        id: contact.id,
-                        birthday: contact.birthday,
-                        daysUntil: daysUntil
-                    });
-                }
+            const contacts = getContactsFromStorage();
+            if (!contacts || !Array.isArray(contacts)) {
+                upcomingContainer.hide();
+                return;
             }
-        });
 
-        if (upcomingBirthdays.length > 0) {
-            // Sort by days until birthday
-            upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-            upcomingBirthdays.forEach(bday => {
-                const daysText = bday.daysUntil === 0 ? '🎉 Today!' : `in ${bday.daysUntil} day${bday.daysUntil === 1 ? '' : 's'}`;
-                const html = `
-                    <div class="birthday-item">
-                        <div class="birthday-info">
-                            <div class="birthday-name">🎂 ${escapeHtml(bday.name)}</div>
-                            <div class="birthday-date">${escapeHtml(bday.birthday)} - ${daysText}</div>
+            const upcomingBirthdays = [];
+
+            contacts.forEach(contact => {
+                if (contact && contact.birthday) {
+                    const [year, month, day] = contact.birthday.split('-');
+                    if (year && month && day) {
+                        // Check if birthday is in the current year
+                        let nextBirthday = new Date(today.getFullYear(), parseInt(month) - 1, parseInt(day));
+                        if (nextBirthday < today) {
+                            // If birthday has passed this year, check next year
+                            nextBirthday = new Date(today.getFullYear() + 1, parseInt(month) - 1, parseInt(day));
+                        }
+
+                        const daysUntil = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
+
+                        // Include birthdays within next 5 days
+                        if (daysUntil >= 0 && daysUntil <= 5) {
+                            upcomingBirthdays.push({
+                                name: contact.name,
+                                id: contact.id,
+                                birthday: contact.birthday,
+                                daysUntil: daysUntil
+                            });
+                        }
+                    }
+                }
+            });
+
+            if (upcomingBirthdays.length > 0) {
+                // Sort by days until birthday
+                upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
+
+                upcomingBirthdays.forEach(bday => {
+                    const daysText = bday.daysUntil === 0 ? '🎉 Today!' : `in ${bday.daysUntil} day${bday.daysUntil === 1 ? '' : 's'}`;
+                    const html = `
+                        <div class="birthday-item">
+                            <div class="birthday-info">
+                                <div class="birthday-name">🎂 ${escapeHtml(bday.name)}</div>
+                                <div class="birthday-date">${escapeHtml(bday.birthday)} - ${daysText}</div>
+                            </div>
+                            <button class="btn-edit-bday" data-id="${bday.id}">Edit</button>
                         </div>
-                        <button class="btn-edit-bday" data-id="${bday.id}">Edit</button>
-                    </div>
-                `;
-                upcomingList.append(html);
-            });
+                    `;
+                    upcomingList.append(html);
+                });
 
-            // Add edit listener
-            upcomingList.find('.btn-edit-bday').on('click', function() {
-                openEditModal(parseInt($(this).data('id')));
-            });
+                // Add edit listener
+                upcomingList.find('.btn-edit-bday').on('click', function() {
+                    openEditModal(parseInt($(this).data('id')));
+                });
 
-            upcomingContainer.show();
-        } else {
-            upcomingContainer.hide();
+                upcomingContainer.show();
+            } else {
+                upcomingContainer.hide();
+            }
+        } catch (error) {
+            console.error('Error displaying upcoming birthdays:', error);
+            $('#upcomingBirthdaysContainer').hide();
         }
     }
 
