@@ -99,7 +99,7 @@ $(document).ready(function() {
             const reader = new FileReader();
             reader.onload = function(e) {
                 pictureData = e.target.result;
-                saveContactData(name, phone, phone2, email, location, pictureData, contacts);
+                saveContactData(name, phone, phone2, email, location, birthday, pictureData, contacts);
             };
             reader.readAsDataURL(picture);
         } else if (editingId) {
@@ -261,7 +261,8 @@ $(document).ready(function() {
                    contact.phone.toLowerCase().includes(searchTerm) ||
                    (contact.phone2 && contact.phone2.toLowerCase().includes(searchTerm)) ||
                    (contact.email && contact.email.toLowerCase().includes(searchTerm)) ||
-                   (contact.location && contact.location.toLowerCase().includes(searchTerm));
+                   (contact.location && contact.location.toLowerCase().includes(searchTerm)) ||
+                   (contact.birthday && contact.birthday.toLowerCase().includes(searchTerm));
         });
 
         // Apply location filter if selected
@@ -487,7 +488,7 @@ $(document).ready(function() {
         const upcomingList = $('#upcomingBirthdaysList');
         upcomingList.empty();
 
-        const contacts = getContacts();
+        const contacts = getContactsFromStorage();
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
