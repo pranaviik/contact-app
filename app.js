@@ -14,12 +14,25 @@ $(document).ready(function() {
     $('.close').on('click', closeModal);
     $('#searchInput').on('keyup', filterContacts);
     $('#btnClearHistory').on('click', clearAccessHistory);
+    
+    // Picture preview
+    $('#contactPicture').on('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                $('#profilePreview').attr('src', event.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
     // Open Add Contact Modal
     function openAddModal() {
         editingId = null;
         $('#modalTitle').text('Add Contact');
         $('#contactForm')[0].reset();
+        $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%234a4a4a" width="100" height="100"/%3E%3Ctext x="50" y="50" font-size="40" fill="%23888" text-anchor="middle" dy=".3em"%3E👤%3C/text%3E%3C/svg%3E');
         $('#contactModal').addClass('show');
     }
 
@@ -34,7 +47,14 @@ $(document).ready(function() {
             $('#modalTitle').text('Edit Contact');
             $('#contactName').val(contact.name);
             $('#contactPhone').val(contact.phone);
-            $('#contactEmail').val(contact.email);
+            $('#contactPhone2').val(contact.phone2 || '');
+            $('#contactEmail').val(contact.email || '');
+            $('#contactLocation').val(contact.location || '');
+            if (contact.picture) {
+                $('#profilePreview').attr('src', contact.picture);
+            } else {
+                $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%234a4a4a" width="100" height="100"/%3E%3Ctext x="50" y="50" font-size="40" fill="%23888" text-anchor="middle" dy=".3em"%3E👤%3C/text%3E%3C/svg%3E');
+            }
             $('#contactModal').addClass('show');
         }
     }
@@ -44,6 +64,7 @@ $(document).ready(function() {
         $('#contactModal').removeClass('show');
         editingId = null;
         $('#contactForm')[0].reset();
+        $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%234a4a4a" width="100" height="100"/%3E%3Ctext x="50" y="50" font-size="40" fill="%23888" text-anchor="middle" dy=".3em"%3E👤%3C/text%3E%3C/svg%3E');
     }
 
     // Save Contact
@@ -52,15 +73,38 @@ $(document).ready(function() {
 
         const name = $('#contactName').val().trim();
         const phone = $('#contactPhone').val().trim();
+        const phone2 = $('#contactPhone2').val().trim();
         const email = $('#contactEmail').val().trim();
+        const location = $('#contactLocation').val().trim();
+        const picture = $('#contactPicture')[0].files[0];
 
-        if (!name || !phone || !email) {
-            alert('Please fill in all fields');
+        if (!name || !phone) {
+            alert('Name and Primary Phone are required');
             return;
         }
 
         let contacts = getContactsFromStorage();
+        let pictureData = null;
 
+        // Handle picture upload
+        if (picture) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                pictureData = e.target.result;
+                saveContactData(name, phone, phone2, email, location, pictureData, contacts);
+            };
+            reader.readAsDataURL(picture);
+        } else if (editingId) {
+            // Keep existing picture if editing
+            const existingContact = contacts.find(c => c.id === editingId);
+            pictureData = existingContact ? existingContact.picture : null;
+            saveContactData(name, phone, phone2, email, location, pictureData, contacts);
+        } else {
+            saveContactData(name, phone, phone2, email, location, pictureData, contacts);
+        }
+    }
+
+    function saveContactData(name, phone, phone2, email, location, picture, contacts) {
         if (editingId) {
             // Update existing contact
             const index = contacts.findIndex(c => c.id === editingId);
@@ -69,7 +113,10 @@ $(document).ready(function() {
                     id: editingId,
                     name: name,
                     phone: phone,
-                    email: email
+                    phone2: phone2,
+                    email: email,
+                    location: location,
+                    picture: picture
                 };
             }
         } else {
@@ -78,7 +125,10 @@ $(document).ready(function() {
                 id: Date.now(),
                 name: name,
                 phone: phone,
-                email: email
+                phone2: phone2,
+                email: email,
+                location: location,
+                picture: picture
             };
             contacts.push(newContact);
         }
@@ -136,12 +186,26 @@ $(document).ready(function() {
             contactsList.append(html);
 
             groupedContacts[letter].forEach(contact => {
+                const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder">👤</div>';
+                let detailsHtml = `<div class="contact-phone">${escapeHtml(contact.phone)}</div>`;
+                if (contact.phone2) {
+                    detailsHtml += `<div class="contact-phone2">${escapeHtml(contact.phone2)}</div>`;
+                }
+                if (contact.email) {
+                    detailsHtml += `<div class="contact-email">${escapeHtml(contact.email)}</div>`;
+                }
+                if (contact.location) {
+                    detailsHtml += `<div class="contact-location">📍 ${escapeHtml(contact.location)}</div>`;
+                }
+                
                 const contactHtml = `
                     <div class="contact-item">
+                        <div class="contact-avatar-wrapper">
+                            ${profilePic}
+                        </div>
                         <div class="contact-info">
                             <div class="contact-name">${escapeHtml(contact.name)}</div>
-                            <div class="contact-phone">${escapeHtml(contact.phone)}</div>
-                            <div class="contact-email">${escapeHtml(contact.email)}</div>
+                            ${detailsHtml}
                         </div>
                         <div class="contact-actions">
                             <button class="btn-edit" data-id="${contact.id}">Edit</button>

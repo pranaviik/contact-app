@@ -256,6 +256,31 @@ body {
     background-color: #313131;
 }
 
+.contact-avatar-wrapper {
+    margin-right: 12px;
+    min-width: 45px;
+}
+
+.contact-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #4a4a4a;
+}
+
+.contact-avatar-placeholder {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #4a4a4a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    border: 2px solid #5a5a5a;
+}
+
 .contact-info {
     flex: 1;
     min-width: 0;
@@ -274,9 +299,21 @@ body {
     margin-bottom: 2px;
 }
 
+.contact-phone2 {
+    font-size: 13px;
+    color: #808080;
+    margin-bottom: 2px;
+}
+
 .contact-email {
     font-size: 13px;
     color: #707070;
+    margin-bottom: 2px;
+}
+
+.contact-location {
+    font-size: 12px;
+    color: #606060;
 }
 
 .contact-actions {
@@ -423,7 +460,46 @@ body {
     font-size: 14px;
 }
 
-.form-group input {
+.required {
+    color: #ff9090;
+    font-weight: 600;
+}
+
+.picture-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    border: 2px solid #4a4a4a;
+    object-fit: cover;
+    background-color: #2a2a2a;
+}
+
+.form-group input[type="file"] {
+    padding: 10px;
+    border: 1px dashed #4a4a4a;
+    border-radius: 4px;
+    font-size: 13px;
+    background-color: #333333;
+    color: #d0d0d0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.form-group input[type="file"]:hover {
+    border-color: #5a5a5a;
+}
+
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="email"] {
     width: 100%;
     padding: 12px;
     border: 1px solid #4a4a4a;
@@ -435,7 +511,9 @@ body {
     transition: all 0.2s ease;
 }
 
-.form-group input:focus {
+.form-group input[type="text"]:focus,
+.form-group input[type="tel"]:focus,
+.form-group input[type="email"]:focus {
     border-color: #5a5a5a;
     background-color: #3f3f3f;
 }

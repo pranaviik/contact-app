@@ -35,17 +35,43 @@
                 <span class="close">&times;</span>
                 <h2 id="modalTitle">Add Contact</h2>
                 <form id="contactForm">
+                    <!-- Profile Picture -->
                     <div class="form-group">
-                        <label for="contactName">Name:</label>
+                        <label for="contactPicture">Profile Picture:</label>
+                        <div class="picture-upload-container">
+                            <img id="profilePreview" class="profile-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%234a4a4a' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='40' fill='%23888' text-anchor='middle' dy='.3em'%3E👤%3C/text%3E%3C/svg%3E" alt="Profile">
+                            <input type="file" id="contactPicture" accept="image/*" placeholder="Choose image">
+                        </div>
+                    </div>
+
+                    <!-- Name (Mandatory) -->
+                    <div class="form-group">
+                        <label for="contactName">Name: <span class="required">*</span></label>
                         <input type="text" id="contactName" required placeholder="Enter name">
                     </div>
+
+                    <!-- Primary Phone (Mandatory) -->
                     <div class="form-group">
-                        <label for="contactPhone">Phone:</label>
+                        <label for="contactPhone">Primary Phone: <span class="required">*</span></label>
                         <input type="tel" id="contactPhone" required placeholder="Enter phone number">
                     </div>
+
+                    <!-- Secondary Phone (Optional) -->
+                    <div class="form-group">
+                        <label for="contactPhone2">Secondary Phone:</label>
+                        <input type="tel" id="contactPhone2" placeholder="Enter secondary phone (optional)">
+                    </div>
+
+                    <!-- Email (Optional) -->
                     <div class="form-group">
                         <label for="contactEmail">Email:</label>
-                        <input type="email" id="contactEmail" required placeholder="Enter email">
+                        <input type="email" id="contactEmail" placeholder="Enter email (optional)">
+                    </div>
+
+                    <!-- Location (Optional) -->
+                    <div class="form-group">
+                        <label for="contactLocation">Location:</label>
+                        <input type="text" id="contactLocation" placeholder="Enter location (optional)">
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn-save">Save Contact</button>
