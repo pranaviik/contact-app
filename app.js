@@ -1,11 +1,13 @@
 $(document).ready(function() {
     const STORAGE_KEY = 'contacts';
     const ACCESS_HISTORY_KEY = 'contactAccessHistory';
+    const STARRED_KEY = 'starredContacts';
     let editingId = null;
 
     // Initialize the app
     loadContacts();
     displayFrequentlyAccessed();
+    displayStarredContacts();
 
     // Event Listeners
     $('#btnAdd').on('click', openAddModal);
@@ -198,6 +200,10 @@ $(document).ready(function() {
                     detailsHtml += `<div class="contact-location">📍 ${escapeHtml(contact.location)}</div>`;
                 }
                 
+                const isStarred = isContactStarred(contact.id);
+                const starClass = isStarred ? 'btn-star active' : 'btn-star';
+                const starText = isStarred ? '★' : '☆';
+                
                 const contactHtml = `
                     <div class="contact-item">
                         <div class="contact-avatar-wrapper">
@@ -208,12 +214,19 @@ $(document).ready(function() {
                             ${detailsHtml}
                         </div>
                         <div class="contact-actions">
+                            <button class="${starClass}" data-id="${contact.id}" title="Star">${starText}</button>
                             <button class="btn-edit" data-id="${contact.id}">Edit</button>
                             <button class="btn-delete" data-id="${contact.id}">Delete</button>
                         </div>
                     </div>
                 `;
                 contactsList.append(contactHtml);
+                
+                // Star button listener
+                contactsList.find('.btn-star[data-id="' + contact.id + '"]').on('click', function(e) {
+                    e.preventDefault();
+                    toggleStar(contact.id);
+                });
             });
         });
 
@@ -321,6 +334,79 @@ $(document).ready(function() {
             "'": '&#039;'
         };
         return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Starred Contacts Functions
+    function toggleStar(contactId) {
+        let starred = JSON.parse(localStorage.getItem(STARRED_KEY) || '[]');
+        const index = starred.indexOf(contactId);
+        
+        if (index > -1) {
+            starred.splice(index, 1);
+        } else {
+            starred.push(contactId);
+        }
+        
+        localStorage.setItem(STARRED_KEY, JSON.stringify(starred));
+        displayStarredContacts();
+        loadContacts();
+    }
+
+    function isContactStarred(contactId) {
+        const starred = JSON.parse(localStorage.getItem(STARRED_KEY) || '[]');
+        return starred.includes(contactId);
+    }
+
+    function displayStarredContacts() {
+        const contacts = getContactsFromStorage();
+        const starred = JSON.parse(localStorage.getItem(STARRED_KEY) || '[]');
+        
+        const starredContacts = contacts.filter(c => starred.includes(c.id));
+        const starredContainer = $('#starredContainer');
+        const starredList = $('#starredList');
+        
+        starredList.empty();
+        
+        if (starredContacts.length === 0) {
+            starredContainer.hide();
+            return;
+        }
+
+        starredContacts.forEach(contact => {
+            const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder">👤</div>';
+            let detailsHtml = `<div class="starred-phone">${escapeHtml(contact.phone)}</div>`;
+            if (contact.email) {
+                detailsHtml += `<div class="starred-email">${escapeHtml(contact.email)}</div>`;
+            }
+
+            const contactHtml = `
+                <div class="starred-contact-item">
+                    <div class="starred-avatar">
+                        ${profilePic}
+                    </div>
+                    <div class="starred-info">
+                        <div class="starred-name">${escapeHtml(contact.name)}</div>
+                        ${detailsHtml}
+                    </div>
+                    <div class="starred-actions">
+                        <button class="btn-unstar" data-id="${contact.id}">★</button>
+                        <button class="btn-edit" data-id="${contact.id}">Edit</button>
+                    </div>
+                </div>
+            `;
+            starredList.append(contactHtml);
+        });
+
+        // Attach listeners
+        starredList.find('.btn-unstar').on('click', function() {
+            toggleStar(parseInt($(this).data('id')));
+        });
+
+        starredList.find('.btn-edit').on('click', function() {
+            openEditModal(parseInt($(this).data('id')));
+        });
+
+        starredContainer.show();
     }
 
     // Close modal when clicking outside of it

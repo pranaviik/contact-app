@@ -118,6 +118,105 @@ body {
     letter-spacing: 0.5px;
 }
 
+/* Starred Contacts Section */
+.starred-section {
+    background-color: #333333;
+    border-bottom: 1px solid #4a4a4a;
+    padding: 15px 20px;
+}
+
+.starred-header {
+    margin-bottom: 12px;
+}
+
+.starred-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #d0d0d0;
+    letter-spacing: 0.5px;
+}
+
+.starred-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.starred-contact-item {
+    display: flex;
+    align-items: center;
+    background-color: #2a2a2a;
+    border: 1px solid #4a4a4a;
+    border-radius: 6px;
+    padding: 12px;
+    transition: all 0.2s ease;
+}
+
+.starred-contact-item:hover {
+    background-color: #313131;
+    border-color: #5a5a5a;
+}
+
+.starred-avatar {
+    margin-right: 12px;
+    min-width: 40px;
+}
+
+.starred-avatar img,
+.starred-avatar .contact-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #4a4a4a;
+}
+
+.starred-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.starred-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 3px;
+}
+
+.starred-phone {
+    font-size: 12px;
+    color: #909090;
+    margin-bottom: 2px;
+}
+
+.starred-email {
+    font-size: 11px;
+    color: #707070;
+}
+
+.starred-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: 10px;
+}
+
+.btn-unstar {
+    background-color: #ffd700;
+    color: #2a2a2a;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-unstar:hover {
+    background-color: #ffed4e;
+    transform: scale(1.1);
+}
+
 .btn-clear-history {
     background-color: transparent;
     color: #888;
@@ -320,6 +419,27 @@ body {
     display: flex;
     gap: 8px;
     margin-left: 12px;
+}
+
+.btn-star {
+    background-color: transparent;
+    color: #888;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-star:hover {
+    color: #ffd700;
+    transform: scale(1.15);
+}
+
+.btn-star.active {
+    color: #ffd700;
 }
 
 .btn-edit,
