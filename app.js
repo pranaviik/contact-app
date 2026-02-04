@@ -497,7 +497,6 @@ $(document).ready(function() {
         contacts.forEach(contact => {
             if (contact.birthday) {
                 const [year, month, day] = contact.birthday.split('-');
-                const birthDate = new Date(year, parseInt(month) - 1, parseInt(day));
 
                 // Check if birthday is in the current year
                 let nextBirthday = new Date(today.getFullYear(), parseInt(month) - 1, parseInt(day));
