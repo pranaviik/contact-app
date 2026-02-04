@@ -386,8 +386,8 @@ body {
 
 /* Emergency Contacts Section */
 .emergency-section {
-    background-color: #4a2a2a;
-    border-top: 2px solid #ff4444;
+    background-color: #3a3330;
+    border-top: 2px solid #d4a574;
     padding: 15px 20px;
     display: none;
 }
@@ -399,7 +399,7 @@ body {
 .emergency-header h3 {
     font-size: 14px;
     font-weight: 600;
-    color: #ff6666;
+    color: #d4a574;
     letter-spacing: 0.5px;
 }
 
@@ -412,17 +412,17 @@ body {
 .emergency-contact-item {
     display: flex;
     align-items: center;
-    background-color: #3a1a1a;
-    border: 2px solid #ff4444;
+    background-color: #2a2420;
+    border: 1px solid #d4a574;
     border-radius: 6px;
     padding: 12px;
     transition: all 0.2s ease;
 }
 
 .emergency-contact-item:hover {
-    background-color: #452525;
-    border-color: #ff6666;
-    box-shadow: 0 0 8px rgba(255, 68, 68, 0.3);
+    background-color: #322a24;
+    border-color: #e6b896;
+    box-shadow: 0 0 8px rgba(212, 165, 116, 0.2);
 }
 
 .emergency-avatar {
@@ -436,7 +436,7 @@ body {
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #ff4444;
+    border: 2px solid #d4a574;
 }
 
 .emergency-info {
@@ -447,19 +447,19 @@ body {
 .emergency-name {
     font-size: 14px;
     font-weight: 600;
-    color: #ff6666;
+    color: #e6b896;
     margin-bottom: 3px;
 }
 
 .emergency-phone {
     font-size: 12px;
-    color: #ff9999;
+    color: #b89968;
     margin-bottom: 2px;
 }
 
 .emergency-phone2 {
     font-size: 12px;
-    color: #ff8888;
+    color: #a88958;
 }
 
 .emergency-actions {
@@ -481,17 +481,17 @@ body {
 }
 
 .btn-emergency:hover {
-    color: #ff4444;
+    color: #d4a574;
     transform: scale(1.15);
 }
 
 .btn-emergency.active {
-    color: #ff4444;
+    color: #d4a574;
 }
 
 .btn-remove-emergency {
-    background-color: #ff4444;
-    color: #ffffff;
+    background-color: #d4a574;
+    color: #2a2420;
     border: none;
     padding: 6px 10px;
     border-radius: 3px;
@@ -502,7 +502,7 @@ body {
 }
 
 .btn-remove-emergency:hover {
-    background-color: #ff6666;
+    background-color: #e6b896;
     transform: scale(1.1);
 }
 

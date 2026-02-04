@@ -219,7 +219,7 @@ $(document).ready(function() {
                 
                 const isEmergency = isContactEmergency(contact.id);
                 const emergencyClass = isEmergency ? 'btn-emergency active' : 'btn-emergency';
-                const emergencyText = isEmergency ? '🚨' : '⚠️';
+                const emergencyText = isEmergency ? '🆘' : '☎️';
                 
                 const contactHtml = `
                     <div class="contact-item">
