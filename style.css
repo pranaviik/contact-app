@@ -97,6 +97,129 @@ body {
     pointer-events: none;
 }
 
+/* Frequently Accessed Section */
+.frequently-accessed-section {
+    background-color: #333333;
+    border-bottom: 1px solid #4a4a4a;
+    padding: 15px 20px;
+}
+
+.frequently-accessed-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.frequently-accessed-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #d0d0d0;
+    letter-spacing: 0.5px;
+}
+
+.btn-clear-history {
+    background-color: transparent;
+    color: #888;
+    border: 1px solid #4a4a4a;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-clear-history:hover {
+    color: #d0d0d0;
+    border-color: #5a5a5a;
+}
+
+.frequently-accessed-list {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-right: 10px;
+}
+
+.frequent-contact-item {
+    display: flex;
+    flex-direction: column;
+    background-color: #2a2a2a;
+    border: 1px solid #4a4a4a;
+    border-radius: 6px;
+    padding: 12px;
+    min-width: 140px;
+    transition: all 0.2s ease;
+}
+
+.frequent-contact-item:hover {
+    background-color: #313131;
+    border-color: #5a5a5a;
+}
+
+.frequent-contact-info {
+    margin-bottom: 10px;
+}
+
+.frequent-contact-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.frequent-contact-phone {
+    font-size: 11px;
+    color: #909090;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.frequent-contact-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.access-badge {
+    background-color: #4a4a4a;
+    color: #d0d0d0;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+}
+
+.btn-quick-edit {
+    background-color: #4a4a4a;
+    color: #d0d0d0;
+    border: 1px solid #5a5a5a;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.btn-quick-edit:hover {
+    background-color: #555555;
+    color: #ffffff;
+    border-color: #666666;
+}
+
+.btn-quick-edit:active {
+    transform: scale(0.98);
+}
+
 /* Contacts Container */
 .contacts-container {
     flex: 1;

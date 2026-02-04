@@ -1,9 +1,11 @@
 $(document).ready(function() {
     const STORAGE_KEY = 'contacts';
+    const ACCESS_HISTORY_KEY = 'contactAccessHistory';
     let editingId = null;
 
     // Initialize the app
     loadContacts();
+    displayFrequentlyAccessed();
 
     // Event Listeners
     $('#btnAdd').on('click', openAddModal);
@@ -11,6 +13,7 @@ $(document).ready(function() {
     $('.btn-cancel').on('click', closeModal);
     $('.close').on('click', closeModal);
     $('#searchInput').on('keyup', filterContacts);
+    $('#btnClearHistory').on('click', clearAccessHistory);
 
     // Open Add Contact Modal
     function openAddModal() {
@@ -27,6 +30,7 @@ $(document).ready(function() {
 
         if (contact) {
             editingId = id;
+            recordContactAccess(id);
             $('#modalTitle').text('Edit Contact');
             $('#contactName').val(contact.name);
             $('#contactPhone').val(contact.phone);
@@ -180,6 +184,67 @@ $(document).ready(function() {
 
     function saveContactsToStorage(contacts) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(contacts));
+    }
+
+    // Track Contact Access
+    function recordContactAccess(contactId) {
+        let history = JSON.parse(localStorage.getItem(ACCESS_HISTORY_KEY) || '{}');
+        history[contactId] = (history[contactId] || 0) + 1;
+        localStorage.setItem(ACCESS_HISTORY_KEY, JSON.stringify(history));
+        displayFrequentlyAccessed();
+    }
+
+    // Display Frequently Accessed Contacts
+    function displayFrequentlyAccessed() {
+        const contacts = getContactsFromStorage();
+        const history = JSON.parse(localStorage.getItem(ACCESS_HISTORY_KEY) || '{}');
+        
+        // Get contacts with access count > 0, sorted by count
+        const frequentContacts = contacts
+            .filter(c => history[c.id] && history[c.id] > 0)
+            .map(c => ({...c, accessCount: history[c.id]}))
+            .sort((a, b) => b.accessCount - a.accessCount)
+            .slice(0, 5); // Show top 5
+
+        const container = $('#frequentlyAccessedContainer');
+        const list = $('#frequentlyAccessedList');
+
+        if (frequentContacts.length === 0) {
+            container.hide();
+            return;
+        }
+
+        list.empty();
+        frequentContacts.forEach(contact => {
+            const html = `
+                <div class="frequent-contact-item">
+                    <div class="frequent-contact-info">
+                        <div class="frequent-contact-name">${escapeHtml(contact.name)}</div>
+                        <div class="frequent-contact-phone">${escapeHtml(contact.phone)}</div>
+                    </div>
+                    <div class="frequent-contact-meta">
+                        <span class="access-badge">${contact.accessCount}</span>
+                        <button class="btn-quick-edit" data-id="${contact.id}">Edit</button>
+                    </div>
+                </div>
+            `;
+            list.append(html);
+        });
+
+        container.show();
+
+        // Attach event listeners
+        $('.btn-quick-edit').on('click', function() {
+            openEditModal(parseInt($(this).data('id')));
+        });
+    }
+
+    // Clear Access History
+    function clearAccessHistory() {
+        if (confirm('Clear frequently accessed history?')) {
+            localStorage.removeItem(ACCESS_HISTORY_KEY);
+            displayFrequentlyAccessed();
+        }
     }
 
     // Helper function to escape HTML
