@@ -3,11 +3,13 @@ $(document).ready(function() {
     const ACCESS_HISTORY_KEY = 'contactAccessHistory';
     const STARRED_KEY = 'starredContacts';
     let editingId = null;
+    let selectedLocationFilter = null;
 
     // Initialize the app
     loadContacts();
     displayFrequentlyAccessed();
     displayStarredContacts();
+    displayLocationFilter();
 
     // Event Listeners
     $('#btnAdd').on('click', openAddModal);
@@ -16,6 +18,7 @@ $(document).ready(function() {
     $('.close').on('click', closeModal);
     $('#searchInput').on('keyup', filterContacts);
     $('#btnClearHistory').on('click', clearAccessHistory);
+    $('#btnClearLocationFilter').on('click', clearLocationFilter);
     
     // Picture preview
     $('#contactPicture').on('change', function(e) {
@@ -245,12 +248,65 @@ $(document).ready(function() {
         const searchTerm = $('#searchInput').val().toLowerCase();
         const contacts = getContactsFromStorage();
 
-        const filteredContacts = contacts.filter(contact => {
+        let filteredContacts = contacts.filter(contact => {
             return contact.name.toLowerCase().includes(searchTerm) ||
-                   contact.phone.toLowerCase().includes(searchTerm);
+                   contact.phone.toLowerCase().includes(searchTerm) ||
+                   (contact.phone2 && contact.phone2.toLowerCase().includes(searchTerm)) ||
+                   (contact.email && contact.email.toLowerCase().includes(searchTerm)) ||
+                   (contact.location && contact.location.toLowerCase().includes(searchTerm));
         });
 
+        // Apply location filter if selected
+        if (selectedLocationFilter) {
+            filteredContacts = filteredContacts.filter(contact => 
+                contact.location && contact.location.toLowerCase() === selectedLocationFilter.toLowerCase()
+            );
+        }
+
         displayContacts(filteredContacts);
+    }
+
+    // Display Location Filter
+    function displayLocationFilter() {
+        const contacts = getContactsFromStorage();
+        const locations = {};
+        
+        // Count contacts by location
+        contacts.forEach(contact => {
+            if (contact.location && contact.location.trim()) {
+                const loc = contact.location.trim();
+                locations[loc] = (locations[loc] || 0) + 1;
+            }
+        });
+
+        const locationFilterList = $('#locationFilterList');
+        locationFilterList.empty();
+
+        if (Object.keys(locations).length === 0) {
+            $('#locationFilterContainer').hide();
+            return;
+        }
+
+        // Sort locations alphabetically
+        Object.keys(locations).sort().forEach(location => {
+            const btn = $(`<button class="btn-location-filter" data-location="${location}">${location} (${locations[location]})</button>`);
+            btn.on('click', function() {
+                selectedLocationFilter = location;
+                displayLocationFilter();
+                filterContacts();
+            });
+            locationFilterList.append(btn);
+        });
+
+        $('#locationFilterContainer').show();
+    }
+
+    // Clear Location Filter
+    function clearLocationFilter() {
+        selectedLocationFilter = null;
+        $('#searchInput').val('');
+        displayLocationFilter();
+        loadContacts();
     }
 
     // LocalStorage Functions

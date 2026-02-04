@@ -14,10 +14,19 @@
             <button class="btn-add" id="btnAdd">+ Add Contact</button>
         </header>
 
-        <!-- Search Bar -->
+        <!-- Search and Filter Bar -->
         <div class="search-container">
-            <input type="text" id="searchInput" class="search-box" placeholder="Search by name or phone...">
+            <input type="text" id="searchInput" class="search-box" placeholder="Search by name, phone, or location...">
             <span class="search-icon">🔍</span>
+        </div>
+
+        <!-- Location Filter -->
+        <div id="locationFilterContainer" class="location-filter-container" style="display: none;">
+            <div class="location-filter-header">
+                <h3>📍 Filter by Location</h3>
+                <button class="btn-clear-filter" id="btnClearLocationFilter">Clear Filter</button>
+            </div>
+            <div id="locationFilterList" class="location-filter-list"></div>
         </div>
 
         <!-- Starred Contacts -->

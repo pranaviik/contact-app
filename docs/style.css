@@ -97,6 +97,69 @@ body {
     pointer-events: none;
 }
 
+/* Location Filter Container */
+.location-filter-container {
+    background-color: #333333;
+    border-bottom: 1px solid #4a4a4a;
+    padding: 15px 20px;
+}
+
+.location-filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.location-filter-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #d0d0d0;
+    letter-spacing: 0.5px;
+}
+
+.btn-clear-filter {
+    background-color: transparent;
+    color: #888;
+    border: 1px solid #4a4a4a;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-clear-filter:hover {
+    color: #d0d0d0;
+    border-color: #5a5a5a;
+}
+
+.location-filter-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.btn-location-filter {
+    background-color: #2a2a2a;
+    color: #d0d0d0;
+    border: 1px solid #4a4a4a;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-location-filter:hover {
+    background-color: #313131;
+    border-color: #5a5a5a;
+    color: #ffffff;
+}
+
 /* Frequently Accessed Section */
 .frequently-accessed-section {
     background-color: #333333;
