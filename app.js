@@ -359,7 +359,7 @@ $(document).ready(function() {
         list.empty();
         frequentContacts.forEach(contact => {
             const lastAccessDate = new Date(contact.lastAccessed);
-            const formattedDate = lastAccessDate.toLocaleDateString('en-US', {
+            const formattedDate = lastAccessDate.toLocaleString('en-US', {
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
