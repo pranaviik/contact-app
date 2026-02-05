@@ -1,7 +1,7 @@
 // sw.js - Service Worker
 
 // You can change this version number to force a cache update
-const CACHE_NAME = 'contact-app-v1';
+const CACHE_NAME = 'contact-app-v2';
 
 // List of files to cache
 const ASSETS_TO_CACHE = [
