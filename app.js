@@ -210,31 +210,32 @@ $(document).ready(function() {
                     detailsHtml += `<div class="contact-location">${escapeHtml(contact.location)}</div>`;
                 }
                 if (contact.birthday) {
-                    detailsHtml += `<div class="contact-birthday">${escapeHtml(contact.birthday)}</div>`;
+                    detailsHtml += `<div class="contact-birthday">BD ${escapeHtml(contact.birthday)}</div>`;
                 }
                 
                 const isStarred = isContactStarred(contact.id);
                 const starClass = isStarred ? 'btn-star active' : 'btn-star';
-                const starText = isStarred ? 'Unstar' : 'Star';
+                const starText = '...';
                 
                 const isEmergency = isContactEmergency(contact.id);
                 const emergencyClass = isEmergency ? 'btn-emergency active' : 'btn-emergency';
-                const emergencyText = isEmergency ? 'Emergency' : 'Mark Emergency';
+                const emergencyText = '...';
                 
+                const displayName = isStarred ? ('★ ' + escapeHtml(contact.name)) : escapeHtml(contact.name);
                 const contactHtml = `
                     <div class="contact-item">
                         <div class="contact-avatar-wrapper">
                             ${profilePic}
                         </div>
                         <div class="contact-info">
-                            <div class="contact-name">${escapeHtml(contact.name)}</div>
+                            <div class="contact-name">${displayName}</div>
                             ${detailsHtml}
                         </div>
                         <div class="contact-actions">
-                            <button class="${starClass}" data-id="${contact.id}" title="Star">${starText}</button>
-                            <button class="${emergencyClass}" data-id="${contact.id}" title="Emergency">${emergencyText}</button>
-                            <button class="btn-edit" data-id="${contact.id}">Edit</button>
-                            <button class="btn-delete" data-id="${contact.id}">Delete</button>
+                            <button class="${starClass}" data-id="${contact.id}" title="${isStarred ? 'Unstar' : 'Star'}">${starText}</button>
+                            <button class="${emergencyClass}" data-id="${contact.id}" title="${isEmergency ? 'Remove emergency' : 'Mark as emergency'}">${emergencyText}</button>
+                            <button class="btn-edit" data-id="${contact.id}" title="Edit">...</button>
+                            <button class="btn-delete" data-id="${contact.id}" title="Delete">...</button>
                         </div>
                     </div>
                 `;
@@ -387,7 +388,7 @@ $(document).ready(function() {
                     </div>
                     <div class="frequent-contact-meta">
                         <span class="last-accessed-badge">${formattedDate}</span>
-                        <button class="btn-quick-edit" data-id="${contact.id}">Edit</button>
+                        <button class="btn-quick-edit" data-id="${contact.id}" title="Edit">...</button>
                     </div>
                 </div>
             `;
@@ -475,8 +476,8 @@ $(document).ready(function() {
                         ${detailsHtml}
                     </div>
                     <div class="starred-actions">
-                        <button class="btn-unstar" data-id="${contact.id}">Unstar</button>
-                        <button class="btn-edit" data-id="${contact.id}">Edit</button>
+                        <button class="btn-unstar" data-id="${contact.id}" title="Unstar">...</button>
+                        <button class="btn-edit" data-id="${contact.id}" title="Edit">...</button>
                     </div>
                 </div>
             `;
@@ -547,8 +548,8 @@ $(document).ready(function() {
                         ${detailsHtml}
                     </div>
                     <div class="emergency-actions">
-                        <button class="btn-remove-emergency" data-id="${contact.id}" title="Remove from emergency">Remove</button>
-                        <button class="btn-edit" data-id="${contact.id}">Edit</button>
+                        <button class="btn-remove-emergency" data-id="${contact.id}" title="Remove from emergency">...</button>
+                        <button class="btn-edit" data-id="${contact.id}" title="Edit">...</button>
                     </div>
                 </div>
             `;
@@ -622,9 +623,9 @@ $(document).ready(function() {
                         <div class="birthday-item">
                             <div class="birthday-info">
                                 <div class="birthday-name">${escapeHtml(bday.name)}</div>
-                                <div class="birthday-date">${escapeHtml(bday.birthday)} - ${daysText}</div>
+                                <div class="birthday-date">BD ${escapeHtml(bday.birthday)} - ${daysText}</div>
                             </div>
-                            <button class="btn-edit-bday" data-id="${bday.id}">Edit</button>
+                            <button class="btn-edit-bday" data-id="${bday.id}" title="Edit">...</button>
                         </div>
                     `;
                     upcomingList.append(html);
