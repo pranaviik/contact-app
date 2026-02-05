@@ -2,128 +2,232 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Contacts</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1>Contacts</h1>
-            <button class="btn-add" id="btnAdd">Add</button>
-        </header>
+    <div class="app-shell">
+        <!-- Safe area top spacer (status bar) -->
+        <div class="safe-area-top"></div>
 
-        <!-- Search and Filter Bar -->
-        <div class="search-container">
-            <input type="text" id="searchInput" class="search-box" placeholder="Search by name, phone, or location...">
-        </div>
+        <div class="app-container">
+            <!-- Main screens -->
+            <main class="screens">
+                <!-- Contacts / Emergency screen -->
+                <section id="screen-contacts" class="screen active" aria-label="Contacts">
+                    <header class="screen-header">
+                        <h1 class="screen-title">Contacts</h1>
+                    </header>
 
-        <!-- Location Filter -->
-        <div id="locationFilterContainer" class="location-filter-container" style="display: none;">
-            <div class="location-filter-header">
-                <h3>Filter by location</h3>
-                <button class="btn-clear-filter" id="btnClearLocationFilter">Clear</button>
-            </div>
-            <div id="locationFilterList" class="location-filter-list"></div>
-        </div>
+                    <!-- Contacts / Emergency tabs -->
+                    <div class="tab-bar">
+                        <button class="tab-button active" data-tab="contacts-list">Contacts</button>
+                        <button class="tab-button" data-tab="emergency-list">Emergency</button>
+                    </div>
 
-        <!-- Upcoming Birthdays -->
-        <div id="upcomingBirthdaysContainer" class="upcoming-birthdays-section" style="display: none;">
-            <div class="upcoming-birthdays-header">
-                <h3>Upcoming birthdays (next 5 days)</h3>
-            </div>
-            <div id="upcomingBirthdaysList" class="upcoming-birthdays-list"></div>
-        </div>
+                    <!-- Search -->
+                    <div class="search-container">
+                        <input
+                            type="text"
+                            id="searchInput"
+                            class="search-box"
+                            placeholder="Search contacts">
+                    </div>
 
-        <!-- Emergency Contacts -->
-        <div id="emergencyContainer" class="emergency-section" style="display: none;">
-            <div class="emergency-header">
-                <h3>Emergency contacts</h3>
-            </div>
-            <div id="emergencyList" class="emergency-list"></div>
-        </div>
+                    <!-- Scrollable content -->
+                    <div class="screen-scroll">
+                        <!-- Favorites section -->
+                        <section id="favoritesSection" class="section favorites-section" aria-label="Favorites">
+                            <div class="section-header-row">
+                                <h2 class="section-title">Favorites</h2>
+                            </div>
+                            <div id="favoritesList" class="list contacts-list"></div>
+                        </section>
 
-        <!-- Starred Contacts -->
-        <div id="starredContainer" class="starred-section" style="display: none;">
-            <div class="starred-header">
-                <h3>Starred</h3>
-            </div>
-            <div id="starredList" class="starred-list"></div>
-        </div>
+                        <!-- All contacts (alphabetical) -->
+                        <section id="allContactsSection" class="section" aria-label="All contacts">
+                            <div id="contactsList" class="list contacts-list"></div>
+                            <p id="emptyContacts" class="empty-state">No contacts yet. Add one to get started.</p>
+                        </section>
 
-        <!-- Frequently Accessed Contacts -->
-        <div id="frequentlyAccessedContainer" class="frequently-accessed-section" style="display: none;">
-            <div class="frequently-accessed-header">
-                <h3>Frequently accessed</h3>
-                <button class="btn-clear-history" id="btnClearHistory">Clear</button>
-            </div>
-            <div id="frequentlyAccessedList" class="frequently-accessed-list"></div>
-        </div>
+                        <!-- Emergency tab content -->
+                        <section id="emergencySection" class="section hidden" aria-label="Emergency contacts">
+                            <div class="section-header-row">
+                                <h2 class="section-title">Emergency contacts</h2>
+                            </div>
+                            <div id="emergencyContactsList" class="list contacts-list"></div>
+                            <p id="emptyEmergency" class="empty-state">No emergency contacts yet.</p>
+                        </section>
+                    </div>
 
-        <!-- Modal for Add/Edit Contact -->
-        <div id="contactModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2 id="modalTitle">Add Contact</h2>
-                <form id="contactForm" novalidate>
-                    <!-- Profile Picture -->
-                    <div class="form-group">
-                        <label for="contactPicture">Profile Picture:</label>
-                        <div class="picture-upload-container">
-                            <img id="profilePreview" class="profile-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f0f0f0' width='100' height='100'/%3E%3Ccircle cx='50' cy='36' r='18' fill='%23d0d0d0'/%3E%3Crect x='20' y='62' width='60' height='20' rx='10' fill='%23d0d0d0'/%3E%3C/svg%3E" alt="Profile">
-                            <input type="file" id="contactPicture" accept="image/*" placeholder="Choose image">
+                    <!-- Add contact floating button -->
+                    <button id="fabAddContact" class="fab-add" aria-label="Add contact">+</button>
+                </section>
+
+                <!-- Contact details screen -->
+                <section id="screen-details" class="screen" aria-label="Contact details">
+                    <header class="screen-header with-actions">
+                        <button class="icon-button" id="btnBackFromDetails" aria-label="Back">&larr;</button>
+                        <div class="header-title-wrapper">
+                            <h1 class="screen-title" id="detailsTitle">Contact</h1>
+                        </div>
+                        <div class="header-actions">
+                            <button class="icon-button" id="btnEditFromDetails" aria-label="Edit">&#9998;</button>
+                            <button class="icon-button destructive" id="btnDeleteFromDetails" aria-label="Delete">&#128465;</button>
+                        </div>
+                    </header>
+
+                    <div class="screen-scroll details-scroll">
+                        <div class="details-header">
+                            <div class="avatar-large" id="detailsAvatar">A</div>
+                            <div class="details-name-block">
+                                <h2 id="detailsName" class="details-name">Name</h2>
+                                <div class="details-tags">
+                                    <button id="btnToggleFavorite" class="chip-button">
+                                        <span class="chip-icon">&#9734;</span>
+                                        <span>Favorite</span>
+                                    </button>
+                                    <button id="btnToggleEmergency" class="chip-button chip-emergency">
+                                        <span class="chip-icon">&#9888;</span>
+                                        <span>Mark emergency</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="details-section">
+                            <div class="details-row" id="detailsPhoneRow">
+                                <div class="details-icon">&#128222;</div>
+                                <div class="details-info">
+                                    <div class="details-label">Phone</div>
+                                    <div id="detailsPhone" class="details-value"></div>
+                                </div>
+                            </div>
+                            <div class="details-row" id="detailsEmailRow">
+                                <div class="details-icon">&#9993;</div>
+                                <div class="details-info">
+                                    <div class="details-label">Email</div>
+                                    <div id="detailsEmail" class="details-value"></div>
+                                </div>
+                            </div>
+                            <div class="details-row" id="detailsAddressRow">
+                                <div class="details-icon">&#128205;</div>
+                                <div class="details-info">
+                                    <div class="details-label">Address</div>
+                                    <div id="detailsAddress" class="details-value"></div>
+                                </div>
+                            </div>
+                            <div class="details-row notes-row" id="detailsNotesRow">
+                                <div class="details-icon">&#9998;</div>
+                                <div class="details-info">
+                                    <div class="details-label">Notes</div>
+                                    <div id="detailsNotes" class="details-value"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </section>
 
-                    <!-- Name (Mandatory) -->
-                    <div class="form-group">
-                        <label for="contactName">Name: <span class="required">*</span></label>
-                        <input type="text" id="contactName" required placeholder="Enter name">
-                    </div>
+                <!-- Add / Edit contact form screen -->
+                <section id="screen-edit" class="screen" aria-label="Edit contact">
+                    <header class="screen-header with-actions">
+                        <button class="icon-button" id="btnCancelEdit" aria-label="Cancel">&times;</button>
+                        <div class="header-title-wrapper">
+                            <h1 class="screen-title" id="editTitle">New Contact</h1>
+                        </div>
+                        <div class="header-actions">
+                            <button class="primary-text-button" id="btnSaveContact">Save</button>
+                        </div>
+                    </header>
 
-                    <!-- Primary Phone (Mandatory) -->
-                    <div class="form-group">
-                        <label for="contactPhone">Primary Phone: <span class="required">*</span></label>
-                        <input type="tel" id="contactPhone" required placeholder="Enter phone number">
-                    </div>
+                    <div class="screen-scroll">
+                        <form id="contactForm" class="contact-form" autocomplete="off">
+                            <div class="avatar-large placeholder" id="editAvatar">?</div>
 
-                    <!-- Secondary Phone (Optional) -->
-                    <div class="form-group">
-                        <label for="contactPhone2">Secondary Phone:</label>
-                        <input type="tel" id="contactPhone2" placeholder="Enter secondary phone (optional)">
+                            <div class="form-group">
+                                <label for="inputName">Name <span class="required">*</span></label>
+                                <input id="inputName" type="text" placeholder="Enter name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPhone">Phone <span class="required">*</span></label>
+                                <input id="inputPhone" type="tel" placeholder="Enter phone number" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputEmail">Email</label>
+                                <input id="inputEmail" type="email" placeholder="Enter email">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputAddress">Address</label>
+                                <input id="inputAddress" type="text" placeholder="Enter address">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputNotes">Notes</label>
+                                <textarea id="inputNotes" placeholder="Enter notes" rows="4"></textarea>
+                            </div>
+                        </form>
                     </div>
+                </section>
 
-                    <!-- Email (Optional) -->
-                    <div class="form-group">
-                        <label for="contactEmail">Email:</label>
-                        <input type="email" id="contactEmail" placeholder="Enter email (optional)">
-                    </div>
+                <!-- Keypad screen -->
+                <section id="screen-keypad" class="screen" aria-label="Keypad">
+                    <header class="screen-header">
+                        <h1 class="screen-title">Enter number</h1>
+                    </header>
 
-                    <!-- Location (Optional) -->
-                    <div class="form-group">
-                        <label for="contactLocation">Location:</label>
-                        <input type="text" id="contactLocation" placeholder="Enter location (optional)">
-                    </div>
+                    <div class="screen-scroll keypad-scroll">
+                        <div class="keypad-display" id="keypadDisplay"></div>
 
-                    <!-- Birthday (Optional) -->
-                    <div class="form-group">
-                        <label for="contactBirthday">Birthday:</label>
-                        <input type="date" id="contactBirthday" placeholder="Select birthday (optional)">
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn-save">Save Contact</button>
-                        <button type="button" class="btn-cancel">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                        <div class="keypad-grid">
+                            <button class="keypad-key" data-key="1">1</button>
+                            <button class="keypad-key" data-key="2">2<span class="sub">ABC</span></button>
+                            <button class="keypad-key" data-key="3">3<span class="sub">DEF</span></button>
+                            <button class="keypad-key" data-key="4">4<span class="sub">GHI</span></button>
+                            <button class="keypad-key" data-key="5">5<span class="sub">JKL</span></button>
+                            <button class="keypad-key" data-key="6">6<span class="sub">MNO</span></button>
+                            <button class="keypad-key" data-key="7">7<span class="sub">PQRS</span></button>
+                            <button class="keypad-key" data-key="8">8<span class="sub">TUV</span></button>
+                            <button class="keypad-key" data-key="9">9<span class="sub">WXYZ</span></button>
+                            <button class="keypad-key" data-key="*">*</button>
+                            <button class="keypad-key" data-key="0">0<span class="sub">+</span></button>
+                            <button class="keypad-key" data-key="#">#</button>
+                        </div>
 
-        <!-- Contacts List -->
-        <div class="contacts-container">
-            <div id="contactsList" class="contacts-list">
-                <p class="empty-state">No contacts yet. Add one to get started!</p>
-            </div>
+                        <div class="keypad-actions">
+                            <button id="btnBackspace" class="icon-button small" aria-label="Backspace">&#9003;</button>
+                            <button id="btnCallFromKeypad" class="call-button" aria-label="Call">&#128222;</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recent calls screen -->
+                <section id="screen-recents" class="screen" aria-label="Recent calls">
+                    <header class="screen-header">
+                        <h1 class="screen-title">Recent</h1>
+                    </header>
+
+                    <div class="screen-scroll">
+                        <div id="recentsList" class="list recents-list"></div>
+                        <p id="emptyRecents" class="empty-state">No recent calls.</p>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Bottom navigation -->
+            <nav class="bottom-nav" aria-label="Main navigation">
+                <button class="bottom-nav-item active" data-screen="screen-contacts">
+                    <span class="icon">&#128101;</span>
+                    <span class="label">Contacts</span>
+                </button>
+                <button class="bottom-nav-item" data-screen="screen-keypad">
+                    <span class="icon">&#128222;</span>
+                    <span class="label">Keypad</span>
+                </button>
+                <button class="bottom-nav-item" data-screen="screen-recents">
+                    <span class="icon">&#9201;</span>
+                    <span class="label">Recent</span>
+                </button>
+            </nav>
         </div>
     </div>
 

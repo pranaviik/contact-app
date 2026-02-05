@@ -1,678 +1,558 @@
-$(document).ready(function() {
-    const STORAGE_KEY = 'contacts';
-    const ACCESS_HISTORY_KEY = 'contactAccessHistory';
-    const STARRED_KEY = 'starredContacts';
-    const EMERGENCY_KEY = 'emergencyContacts';
-    let editingId = null;
-    let selectedLocationFilter = null;
+// Mobile Contacts App - jQuery SPA
+// Data is stored in localStorage under CONTACTS_KEY and RECENTS_KEY.
 
-    // Initialize the app
-    loadContacts();
-    displayFrequentlyAccessed();
-    displayUpcomingBirthdays();
-    displayEmergencyContacts();
-    displayStarredContacts();
-    displayLocationFilter();
+$(function () {
+    const CONTACTS_KEY = 'contacts';
+    const RECENTS_KEY = 'recents';
 
-    // Event Listeners
-    $('#btnAdd').on('click', openAddModal);
-    $('#contactForm').on('submit', saveContact);
-    $('.btn-cancel').on('click', closeModal);
-    $('.close').on('click', closeModal);
-    $('#searchInput').on('keyup', filterContacts);
-    $('#btnClearHistory').on('click', clearAccessHistory);
-    $('#btnClearLocationFilter').on('click', clearLocationFilter);
-    
-    // Picture preview
-    $('#contactPicture').on('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                $('#profilePreview').attr('src', event.target.result);
-            };
-            reader.readAsDataURL(file);
+    /** @type {Array<{id:string,name:string,phone:string,email?:string,address?:string,notes?:string,favorite?:boolean,emergency?:boolean}>} */
+    let contacts = [];
+    /** @type {Array<{id:string,number:string,contactId?:string,type:string,timestamp:number}>} */
+    let recents = [];
+    let currentContactId = null;
+    let editingContactId = null;
+
+    // Cache DOM
+    const $screens = $('.screen');
+    const $bottomNavItems = $('.bottom-nav-item');
+    const $tabButtons = $('.tab-button');
+
+    const $favoritesSection = $('#favoritesSection');
+    const $favoritesList = $('#favoritesList');
+    const $contactsList = $('#contactsList');
+    const $emptyContacts = $('#emptyContacts');
+
+    const $emergencySection = $('#emergencySection');
+    const $emergencyContactsList = $('#emergencyContactsList');
+    const $emptyEmergency = $('#emptyEmergency');
+
+    const $recentsList = $('#recentsList');
+    const $emptyRecents = $('#emptyRecents');
+
+    const $searchInput = $('#searchInput');
+
+    const $fabAdd = $('#fabAddContact');
+
+    // Details screen elements
+    const $detailsName = $('#detailsName');
+    const $detailsTitle = $('#detailsTitle');
+    const $detailsAvatar = $('#detailsAvatar');
+    const $detailsPhone = $('#detailsPhone');
+    const $detailsEmail = $('#detailsEmail');
+    const $detailsAddress = $('#detailsAddress');
+    const $detailsNotes = $('#detailsNotes');
+    const $detailsPhoneRow = $('#detailsPhoneRow');
+    const $detailsEmailRow = $('#detailsEmailRow');
+    const $detailsAddressRow = $('#detailsAddressRow');
+    const $detailsNotesRow = $('#detailsNotesRow');
+    const $btnToggleFavorite = $('#btnToggleFavorite');
+    const $btnToggleEmergency = $('#btnToggleEmergency');
+
+    // Edit screen elements
+    const $editTitle = $('#editTitle');
+    const $editAvatar = $('#editAvatar');
+    const $inputName = $('#inputName');
+    const $inputPhone = $('#inputPhone');
+    const $inputEmail = $('#inputEmail');
+    const $inputAddress = $('#inputAddress');
+    const $inputNotes = $('#inputNotes');
+
+    // Keypad
+    const $keypadDisplay = $('#keypadDisplay');
+
+    // --- Storage helpers ---
+    function loadContacts() {
+        try {
+            const raw = localStorage.getItem(CONTACTS_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                    contacts = parsed;
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to load contacts', e);
+        }
+
+        // Seed with a few contacts on first load (for demo / Figma parity)
+        contacts = [
+            { id: uid(), name: 'Alice Johnson', phone: '+1 (555) 123-4567', email: 'alice.johnson@email.com', address: '123 Main St, New York, NY 10001', notes: 'Met at conference', favorite: true },
+            { id: uid(), name: 'Bob Smith', phone: '+1 (555) 234-5678', favorite: false },
+            { id: uid(), name: 'Carol Williams', phone: '+1 (555) 345-6789', favorite: true },
+            { id: uid(), name: 'David Brown', phone: '+1 (555) 456-7890', favorite: false },
+        ];
+        saveContacts();
+    }
+
+    function saveContacts() {
+        localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts));
+    }
+
+    function loadRecents() {
+        try {
+            const raw = localStorage.getItem(RECENTS_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                    recents = parsed;
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to load recents', e);
+        }
+        recents = [];
+    }
+
+    function saveRecents() {
+        localStorage.setItem(RECENTS_KEY, JSON.stringify(recents));
+    }
+
+    // --- Utility ---
+    function uid() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+
+    function firstInitial(name) {
+        if (!name) return '?';
+        return name.trim().charAt(0).toUpperCase();
+    }
+
+    function normalize(str) {
+        return (str || '').toLowerCase();
+    }
+
+    function formatTimeAgo(timestamp) {
+        const diffMs = Date.now() - timestamp;
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return 'Just now';
+        if (diffMin === 1) return '1 min ago';
+        if (diffMin < 60) return diffMin + ' min ago';
+        const diffHr = Math.floor(diffMin / 60);
+        if (diffHr === 1) return '1 hour ago';
+        if (diffHr < 24) return diffHr + ' hours ago';
+        if (diffHr < 48) return 'Yesterday';
+        const diffDay = Math.floor(diffHr / 24);
+        return diffDay + ' days ago';
+    }
+
+    function findContactById(id) {
+        return contacts.find(c => c.id === id) || null;
+    }
+
+    function findContactByNumber(number) {
+        const clean = (number || '').replace(/\D/g, '');
+        if (!clean) return null;
+        return contacts.find(c => (c.phone || '').replace(/\D/g, '') === clean) || null;
+    }
+
+    // --- Navigation ---
+    function showScreen(id) {
+        $screens.removeClass('active');
+        $('#' + id).addClass('active');
+    }
+
+    function setActiveBottomNav(screenId) {
+        $bottomNavItems.each(function () {
+            const $btn = $(this);
+            $btn.toggleClass('active', $btn.data('screen') === screenId);
+        });
+    }
+
+    $bottomNavItems.on('click', function () {
+        const screenId = $(this).data('screen');
+        if (!screenId) return;
+        showScreen(screenId);
+        setActiveBottomNav(screenId);
+    });
+
+    // Tab switching within contacts screen
+    $tabButtons.on('click', function () {
+        const tab = $(this).data('tab');
+        if (tab === 'contacts-list') {
+            $tabButtons.removeClass('active');
+            $(this).addClass('active');
+            $('#favoritesSection, #allContactsSection').removeClass('hidden');
+            $emergencySection.addClass('hidden');
+        } else if (tab === 'emergency-list') {
+            $tabButtons.removeClass('active');
+            $(this).addClass('active');
+            $('#favoritesSection, #allContactsSection').addClass('hidden');
+            $emergencySection.removeClass('hidden');
         }
     });
 
-    // Open Add Contact Modal
-    function openAddModal() {
-        editingId = null;
-        $('#modalTitle').text('Add Contact');
-        $('#contactForm')[0].reset();
-        $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23f0f0f0" width="100" height="100"/%3E%3Ccircle cx="50" cy="36" r="18" fill="%23d0d0d0"/%3E%3Crect x="20" y="62" width="60" height="20" rx="10" fill="%23d0d0d0"/%3E%3C/svg%3E');
-        $('#contactModal').addClass('show');
-    }
+    // --- Rendering ---
+    function renderContacts() {
+        const q = normalize($searchInput.val());
 
-    // Open Edit Contact Modal
-    function openEditModal(id) {
-        const contacts = getContactsFromStorage();
-        const contact = contacts.find(c => c.id === id);
+        const filtered = contacts
+            .slice()
+            .sort((a, b) => normalize(a.name).localeCompare(normalize(b.name)));
 
-        if (contact) {
-            editingId = id;
-            recordContactAccess(id);
-            $('#modalTitle').text('Edit Contact');
-            $('#contactName').val(contact.name);
-            $('#contactPhone').val(contact.phone);
-            $('#contactPhone2').val(contact.phone2 || '');
-            $('#contactEmail').val(contact.email || '');
-            $('#contactLocation').val(contact.location || '');
-            $('#contactBirthday').val(contact.birthday || '');
-            if (contact.picture) {
-                $('#profilePreview').attr('src', contact.picture);
-            } else {
-                $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23f0f0f0" width="100" height="100"/%3E%3Ccircle cx="50" cy="36" r="18" fill="%23d0d0d0"/%3E%3Crect x="20" y="62" width="60" height="20" rx="10" fill="%23d0d0d0"/%3E%3C/svg%3E');
-            }
-            $('#contactModal').addClass('show');
+        const favorites = filtered.filter(c => c.favorite);
+        const nonFavorites = filtered.filter(c => !c.favorite);
+
+        // Favorites list
+        $favoritesList.empty();
+        if (favorites.length) {
+            $favoritesSection.removeClass('hidden');
+            favorites.forEach(c => {
+                const $row = buildContactRow(c, true);
+                $favoritesList.append($row);
+            });
+        } else {
+            $favoritesSection.addClass('hidden');
+        }
+
+        // All contacts with alphabetical headers
+        $contactsList.empty();
+        if (!nonFavorites.length && !favorites.length) {
+            $emptyContacts.removeClass('hidden');
+        } else {
+            $emptyContacts.addClass('hidden');
+            let currentLetter = null;
+            filtered.forEach(c => {
+                if (q && !matchesSearch(c, q)) return;
+                const letter = firstInitial(c.name);
+                if (letter !== currentLetter) {
+                    currentLetter = letter;
+                    const $sec = $('<div>').addClass('section-label').text(currentLetter);
+                    $contactsList.append($sec);
+                }
+                const $row = buildContactRow(c, false);
+                $contactsList.append($row);
+            });
+        }
+
+        // Emergency list
+        $emergencyContactsList.empty();
+        const emerg = filtered.filter(c => c.emergency);
+        if (emerg.length) {
+            emerg.forEach(c => {
+                const $row = buildContactRow(c, false, true);
+                $emergencyContactsList.append($row);
+            });
+            $emptyEmergency.addClass('hidden');
+        } else {
+            $emptyEmergency.removeClass('hidden');
         }
     }
 
-    // Close Modal
-    function closeModal() {
-        $('#contactModal').removeClass('show');
-        editingId = null;
-        $('#contactForm')[0].reset();
-        $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23f0f0f0" width="100" height="100"/%3E%3Ccircle cx="50" cy="36" r="18" fill="%23d0d0d0"/%3E%3Crect x="20" y="62" width="60" height="20" rx="10" fill="%23d0d0d0"/%3E%3C/svg%3E');
+    function matchesSearch(contact, q) {
+        if (!q) return true;
+        const name = normalize(contact.name);
+        const phone = normalize(contact.phone);
+        const email = normalize(contact.email);
+        return name.includes(q) || phone.includes(q) || email.includes(q);
     }
 
-    // Save Contact
-    function saveContact(e) {
-        e.preventDefault();
+    function buildContactRow(contact, isFavoriteSection, isEmergencySection) {
+        const $row = $('<div>')
+            .addClass('contact-row')
+            .attr('data-id', contact.id);
 
-        const name = $('#contactName').val().trim();
-        const phone = $('#contactPhone').val().trim();
-        const phone2 = $('#contactPhone2').val().trim();
-        const email = $('#contactEmail').val().trim();
-        const location = $('#contactLocation').val().trim();
-        const birthday = $('#contactBirthday').val();
-        const picture = $('#contactPicture')[0].files[0];
+        const $avatar = $('<div>')
+            .addClass('avatar')
+            .toggleClass('emergency', !!contact.emergency)
+            .text(firstInitial(contact.name));
+
+        const $text = $('<div>').addClass('contact-text');
+        $('<div>').addClass('contact-name').text(contact.name).appendTo($text);
+        $('<div>').addClass('contact-meta').text(contact.phone || '').appendTo($text);
+
+        const $star = $('<div>').addClass('favorite-star').html(contact.favorite ? '★' : '☆');
+        if (contact.favorite) $star.addClass('active');
+
+        $row.append($avatar, $text, $star);
+
+        // Click row -> details
+        $row.on('click', function (e) {
+            if ($(e.target).is($star)) return;
+            openDetails(contact.id);
+        });
+
+        // Toggle favorite
+        $star.on('click', function (e) {
+            e.stopPropagation();
+            contact.favorite = !contact.favorite;
+            saveContacts();
+            renderContacts();
+            if (currentContactId === contact.id) {
+                // Update chips if viewing details
+                syncDetailsFavoriteEmergency(contact);
+            }
+        });
+
+        return $row;
+    }
+
+    function renderRecents() {
+        $recentsList.empty();
+        if (!recents.length) {
+            $emptyRecents.removeClass('hidden');
+            return;
+        }
+        $emptyRecents.addClass('hidden');
+
+        // newest first
+        const items = recents.slice().sort((a, b) => b.timestamp - a.timestamp);
+        items.forEach(r => {
+            const contact = r.contactId ? findContactById(r.contactId) : findContactByNumber(r.number);
+            const isKnown = !!contact;
+            const name = contact ? contact.name : r.number;
+            const initials = isKnown ? firstInitial(contact.name) : '+(';
+
+            const $item = $('<div>').addClass('recents-list-item');
+            const $avatar = $('<div>')
+                .addClass('recent-avatar')
+                .addClass(isKnown ? 'known' : 'unknown')
+                .text(initials);
+            const $info = $('<div>').addClass('recent-info');
+            const $name = $('<div>')
+                .addClass('recent-name')
+                .toggleClass('unknown', !isKnown)
+                .text(name);
+            const $number = $('<div>')
+                .addClass('recent-number')
+                .text(isKnown ? r.number : r.number);
+            const $meta = $('<div>')
+                .addClass('recent-meta')
+                .text(formatTimeAgo(r.timestamp));
+
+            $info.append($name, $number, $meta);
+            const $icon = $('<div>').addClass('recent-call-icon').html('📞');
+
+            $item.append($avatar, $info, $icon);
+
+            // Tapping call icon re-adds to recents
+            $icon.on('click', function () {
+                logCall(r.number);
+            });
+
+            $recentsList.append($item);
+        });
+    }
+
+    // --- Details screen ---
+    function openDetails(contactId) {
+        const contact = findContactById(contactId);
+        if (!contact) return;
+        currentContactId = contactId;
+
+        $detailsName.text(contact.name || '');
+        $detailsTitle.text(contact.name || 'Contact');
+        $detailsAvatar.text(firstInitial(contact.name));
+
+        setRowValue($detailsPhoneRow, $detailsPhone, contact.phone);
+        setRowValue($detailsEmailRow, $detailsEmail, contact.email);
+        setRowValue($detailsAddressRow, $detailsAddress, contact.address);
+        setRowValue($detailsNotesRow, $detailsNotes, contact.notes);
+
+        syncDetailsFavoriteEmergency(contact);
+
+        showScreen('screen-details');
+    }
+
+    function syncDetailsFavoriteEmergency(contact) {
+        $btnToggleFavorite.toggleClass('active', !!contact.favorite);
+        $btnToggleFavorite.find('.chip-icon').text(contact.favorite ? '★' : '☆');
+
+        $btnToggleEmergency.toggleClass('active', !!contact.emergency);
+    }
+
+    function setRowValue($row, $valueEl, value) {
+        if (value && value.trim()) {
+            $valueEl.text(value);
+            $row.show();
+        } else {
+            $row.hide();
+        }
+    }
+
+    $('#btnBackFromDetails').on('click', function () {
+        showScreen('screen-contacts');
+        setActiveBottomNav('screen-contacts');
+    });
+
+    $('#btnEditFromDetails').on('click', function () {
+        if (!currentContactId) return;
+        const contact = findContactById(currentContactId);
+        if (!contact) return;
+        openEdit(contact);
+    });
+
+    $('#btnDeleteFromDetails').on('click', function () {
+        if (!currentContactId) return;
+        const contact = findContactById(currentContactId);
+        if (!contact) return;
+        if (!window.confirm(`Delete contact "${contact.name}"?`)) return;
+        contacts = contacts.filter(c => c.id !== contact.id);
+        saveContacts();
+        currentContactId = null;
+        renderContacts();
+        showScreen('screen-contacts');
+        setActiveBottomNav('screen-contacts');
+    });
+
+    $btnToggleFavorite.on('click', function () {
+        if (!currentContactId) return;
+        const contact = findContactById(currentContactId);
+        if (!contact) return;
+        contact.favorite = !contact.favorite;
+        saveContacts();
+        syncDetailsFavoriteEmergency(contact);
+        renderContacts();
+    });
+
+    $btnToggleEmergency.on('click', function () {
+        if (!currentContactId) return;
+        const contact = findContactById(currentContactId);
+        if (!contact) return;
+        contact.emergency = !contact.emergency;
+        saveContacts();
+        syncDetailsFavoriteEmergency(contact);
+        renderContacts();
+    });
+
+    // --- Add / Edit contact ---
+    function resetEditForm() {
+        editingContactId = null;
+        $editTitle.text('New Contact');
+        $editAvatar.text('?');
+        $inputName.val('');
+        $inputPhone.val('');
+        $inputEmail.val('');
+        $inputAddress.val('');
+        $inputNotes.val('');
+    }
+
+    function openEdit(contact) {
+        if (contact) {
+            editingContactId = contact.id;
+            $editTitle.text('Edit Contact');
+            $editAvatar.text(firstInitial(contact.name));
+            $inputName.val(contact.name || '');
+            $inputPhone.val(contact.phone || '');
+            $inputEmail.val(contact.email || '');
+            $inputAddress.val(contact.address || '');
+            $inputNotes.val(contact.notes || '');
+        } else {
+            resetEditForm();
+        }
+        showScreen('screen-edit');
+    }
+
+    $fabAdd.on('click', function () {
+        resetEditForm();
+        openEdit(null);
+    });
+
+    $('#btnCancelEdit').on('click', function () {
+        if (currentContactId) {
+            openDetails(currentContactId);
+        } else {
+            showScreen('screen-contacts');
+            setActiveBottomNav('screen-contacts');
+        }
+    });
+
+    $('#contactForm').on('input', '#inputName', function () {
+        const name = $inputName.val();
+        $editAvatar.text(firstInitial(name));
+    });
+
+    $('#btnSaveContact').on('click', function () {
+        const name = $inputName.val().trim();
+        const phone = $inputPhone.val().trim();
 
         if (!name || !phone) {
-            alert('Name and Primary Phone are required');
+            alert('Name and phone are required.');
             return;
         }
 
-        let contacts = getContactsFromStorage();
-        let pictureData = null;
-
-        // Handle picture upload
-        if (picture) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                pictureData = e.target.result;
-                saveContactData(name, phone, phone2, email, location, birthday, pictureData, contacts);
-            };
-            reader.readAsDataURL(picture);
-        } else if (editingId) {
-            // Keep existing picture if editing
-            const existingContact = contacts.find(c => c.id === editingId);
-            pictureData = existingContact ? existingContact.picture : null;
-            saveContactData(name, phone, phone2, email, location, birthday, pictureData, contacts);
-        } else {
-            saveContactData(name, phone, phone2, email, location, birthday, pictureData, contacts);
-        }
-    }
-
-    function saveContactData(name, phone, phone2, email, location, birthday, picture, contacts) {
-        if (editingId) {
-            // Update existing contact
-            const index = contacts.findIndex(c => c.id === editingId);
-            if (index !== -1) {
-                contacts[index] = {
-                    id: editingId,
-                    name: name,
-                    phone: phone,
-                    phone2: phone2,
-                    email: email,
-                    location: location,
-                    birthday: birthday,
-                    picture: picture
-                };
+        if (editingContactId) {
+            const contact = findContactById(editingContactId);
+            if (contact) {
+                contact.name = name;
+                contact.phone = phone;
+                contact.email = $inputEmail.val().trim();
+                contact.address = $inputAddress.val().trim();
+                contact.notes = $inputNotes.val().trim();
             }
         } else {
-            // Add new contact
             const newContact = {
-                id: Date.now(),
-                name: name,
-                phone: phone,
-                phone2: phone2,
-                email: email,
-                location: location,
-                birthday: birthday,
-                picture: picture
+                id: uid(),
+                name,
+                phone,
+                email: $inputEmail.val().trim(),
+                address: $inputAddress.val().trim(),
+                notes: $inputNotes.val().trim(),
+                favorite: false,
+                emergency: false,
             };
             contacts.push(newContact);
+            editingContactId = newContact.id;
         }
 
-        // Sort contacts alphabetically
-        contacts.sort((a, b) => a.name.localeCompare(b.name));
-
-        // Save to localStorage
-        saveContactsToStorage(contacts);
-
-        // Refresh the UI
-        loadContacts();
-        closeModal();
-    }
-
-    // Delete Contact
-    function deleteContact(id) {
-        if (confirm('Are you sure you want to delete this contact?')) {
-            let contacts = getContactsFromStorage();
-            contacts = contacts.filter(c => c.id !== id);
-            saveContactsToStorage(contacts);
-            loadContacts();
-        }
-    }
-
-    // Load and Display Contacts
-    function loadContacts() {
-        const contacts = getContactsFromStorage();
-        displayContacts(contacts);
-    }
-
-    // Display Contacts with Alphabetical Grouping
-    function displayContacts(contacts) {
-        const contactsList = $('#contactsList');
-        contactsList.empty();
-
-        if (contacts.length === 0) {
-            contactsList.html('<p class="empty-state">No contacts yet. Add one to get started!</p>');
-            return;
-        }
-
-        // Group contacts by first letter
-        const groupedContacts = {};
-        contacts.forEach(contact => {
-            const firstLetter = contact.name.charAt(0).toUpperCase();
-            if (!groupedContacts[firstLetter]) {
-                groupedContacts[firstLetter] = [];
-            }
-            groupedContacts[firstLetter].push(contact);
-        });
-
-        // Display grouped contacts
-        Object.keys(groupedContacts).sort().forEach(letter => {
-            const html = `<div class="section-header">${letter}</div>`;
-            contactsList.append(html);
-
-            groupedContacts[letter].forEach(contact => {
-                const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder"></div>';
-                let detailsHtml = `<div class="contact-phone">${escapeHtml(contact.phone)}</div>`;
-                if (contact.phone2) {
-                    detailsHtml += `<div class="contact-phone2">${escapeHtml(contact.phone2)}</div>`;
-                }
-                if (contact.email) {
-                    detailsHtml += `<div class="contact-email">${escapeHtml(contact.email)}</div>`;
-                }
-                if (contact.location) {
-                    detailsHtml += `<div class="contact-location">${escapeHtml(contact.location)}</div>`;
-                }
-                if (contact.birthday) {
-                    detailsHtml += `<div class="contact-birthday">BD ${escapeHtml(contact.birthday)}</div>`;
-                }
-                
-                const isStarred = isContactStarred(contact.id);
-                const starClass = isStarred ? 'btn-star active' : 'btn-star';
-                const starText = isStarred ? '★' : '☆';
-                
-                const isEmergency = isContactEmergency(contact.id);
-
-                const contactHtml = `
-                    <div class="contact-item">
-                        <div class="contact-avatar-wrapper">
-                            ${profilePic}
-                        </div>
-                        <div class="contact-info">
-                            <div class="contact-name">${escapeHtml(contact.name)}</div>
-                            ${detailsHtml}
-                        </div>
-                        <div class="contact-actions">
-                            <button class="${starClass}" data-id="${contact.id}" title="${isStarred ? 'Unstar' : 'Star'}">${starText}</button>
-                            <div class="kebab">
-                                <button class="btn-kebab" data-id="${contact.id}" title="More">⋮</button>
-                                <div class="kebab-menu" data-id="${contact.id}">
-                                    <button class="kebab-edit" data-id="${contact.id}" title="Edit">Edit</button>
-                                    <button class="kebab-delete" data-id="${contact.id}" title="Delete">Delete</button>
-                                    <button class="kebab-emergency" data-id="${contact.id}" title="${isEmergency ? 'Remove from emergency' : 'Add to emergency'}">${isEmergency ? 'Remove emergency' : 'Add to emergency'}</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                contactsList.append(contactHtml);
-                
-                // Star button listener
-                contactsList.find('.btn-star[data-id="' + contact.id + '"]').on('click', function(e) {
-                    e.preventDefault();
-                    toggleStar(contact.id);
-                });
-
-                // Kebab toggle
-                contactsList.find('.btn-kebab[data-id="' + contact.id + '"]').on('click', function(e) {
-                    e.stopPropagation();
-                    const id = $(this).data('id');
-                    $('.kebab-menu').not('[data-id="' + id + '"]').removeClass('open');
-                    const menu = $('.kebab-menu[data-id="' + id + '"]');
-                    menu.toggleClass('open');
-                });
-
-                // Menu actions
-                contactsList.find('.kebab-edit[data-id="' + contact.id + '"]').on('click', function(e) {
-                    e.preventDefault();
-                    openEditModal(parseInt($(this).data('id')));
-                    $('.kebab-menu').removeClass('open');
-                });
-
-                contactsList.find('.kebab-delete[data-id="' + contact.id + '"]').on('click', function(e) {
-                    e.preventDefault();
-                    deleteContact(parseInt($(this).data('id')));
-                    $('.kebab-menu').removeClass('open');
-                });
-
-                contactsList.find('.kebab-emergency[data-id="' + contact.id + '"]').on('click', function(e) {
-                    e.preventDefault();
-                    toggleEmergency(parseInt($(this).data('id')));
-                    $('.kebab-menu').removeClass('open');
-                });
-            });
-        });
-        
-        // Close kebab menu when clicking outside
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('.kebab').length) {
-                $('.kebab-menu').removeClass('open');
-            }
-        });
-    }
-
-    // Filter Contacts by Search
-    function filterContacts() {
-        const searchTerm = $('#searchInput').val().toLowerCase();
-        const contacts = getContactsFromStorage();
-
-        let filteredContacts = contacts.filter(contact => {
-            return contact.name.toLowerCase().includes(searchTerm) ||
-                   contact.phone.toLowerCase().includes(searchTerm) ||
-                   (contact.phone2 && contact.phone2.toLowerCase().includes(searchTerm)) ||
-                   (contact.email && contact.email.toLowerCase().includes(searchTerm)) ||
-                   (contact.location && contact.location.toLowerCase().includes(searchTerm)) ||
-                   (contact.birthday && contact.birthday.toLowerCase().includes(searchTerm));
-        });
-
-        // Apply location filter if selected
-        if (selectedLocationFilter) {
-            filteredContacts = filteredContacts.filter(contact => 
-                contact.location && contact.location.toLowerCase() === selectedLocationFilter.toLowerCase()
-            );
-        }
-
-        displayContacts(filteredContacts);
-    }
-
-    // Display Location Filter
-    function displayLocationFilter() {
-        const contacts = getContactsFromStorage();
-        const locations = {};
-        
-        // Count contacts by location
-        contacts.forEach(contact => {
-            if (contact.location && contact.location.trim()) {
-                const loc = contact.location.trim();
-                locations[loc] = (locations[loc] || 0) + 1;
-            }
-        });
-
-        const locationFilterList = $('#locationFilterList');
-        locationFilterList.empty();
-
-        if (Object.keys(locations).length === 0) {
-            $('#locationFilterContainer').hide();
-            return;
-        }
-
-        // Sort locations alphabetically
-        Object.keys(locations).sort().forEach(location => {
-            const btn = $(`<button class="btn-location-filter" data-location="${location}">${location} (${locations[location]})</button>`);
-            btn.on('click', function() {
-                selectedLocationFilter = location;
-                displayLocationFilter();
-                filterContacts();
-            });
-            locationFilterList.append(btn);
-        });
-
-        $('#locationFilterContainer').show();
-    }
-
-    // Clear Location Filter
-    function clearLocationFilter() {
-        selectedLocationFilter = null;
-        $('#searchInput').val('');
-        displayLocationFilter();
-        loadContacts();
-    }
-
-    // LocalStorage Functions
-    function getContactsFromStorage() {
-        const data = localStorage.getItem(STORAGE_KEY);
-        return data ? JSON.parse(data) : [];
-    }
-
-    function saveContactsToStorage(contacts) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(contacts));
-    }
-
-    // Track Contact Access
-    function recordContactAccess(contactId) {
-        let history = JSON.parse(localStorage.getItem(ACCESS_HISTORY_KEY) || '{}');
-        history[contactId] = new Date().toISOString();
-        localStorage.setItem(ACCESS_HISTORY_KEY, JSON.stringify(history));
-        displayFrequentlyAccessed();
-    }
-
-    // Display Frequently Accessed Contacts
-    function displayFrequentlyAccessed() {
-        const contacts = getContactsFromStorage();
-        const history = JSON.parse(localStorage.getItem(ACCESS_HISTORY_KEY) || '{}');
-        
-        // Get contacts with access history, sorted by most recent
-        const frequentContacts = contacts
-            .filter(c => history[c.id])
-            .map(c => ({...c, lastAccessed: history[c.id]}))
-            .sort((a, b) => new Date(b.lastAccessed) - new Date(a.lastAccessed))
-            .slice(0, 5); // Show top 5
-
-        const container = $('#frequentlyAccessedContainer');
-        const list = $('#frequentlyAccessedList');
-
-        if (frequentContacts.length === 0) {
-            container.hide();
-            return;
-        }
-
-        list.empty();
-        frequentContacts.forEach(contact => {
-            const lastAccessDate = new Date(contact.lastAccessed);
-            const formattedDate = lastAccessDate.toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            const html = `
-                <div class="frequent-contact-item">
-                    <div class="frequent-contact-info">
-                        <div class="frequent-contact-name">${escapeHtml(contact.name)}</div>
-                        <div class="frequent-contact-phone">${escapeHtml(contact.phone)}</div>
-                    </div>
-                    <div class="frequent-contact-meta">
-                        <span class="last-accessed-badge">${formattedDate}</span>
-                        <button class="btn-quick-edit" data-id="${contact.id}" title="Edit">...</button>
-                    </div>
-                </div>
-            `;
-            list.append(html);
-        });
-
-        container.show();
-
-        // Attach event listeners
-        $('.btn-quick-edit').on('click', function() {
-            openEditModal(parseInt($(this).data('id')));
-        });
-    }
-
-    // Clear Access History
-    function clearAccessHistory() {
-        if (confirm('Clear frequently accessed history?')) {
-            localStorage.removeItem(ACCESS_HISTORY_KEY);
-            displayFrequentlyAccessed();
-        }
-    }
-
-    // Helper function to escape HTML
-    function escapeHtml(text) {
-        const map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        };
-        return text.replace(/[&<>"']/g, m => map[m]);
-    }
-
-    // Starred Contacts Functions
-    function toggleStar(contactId) {
-        let starred = JSON.parse(localStorage.getItem(STARRED_KEY) || '[]');
-        const index = starred.indexOf(contactId);
-        
-        if (index > -1) {
-            starred.splice(index, 1);
-        } else {
-            starred.push(contactId);
-        }
-        
-        localStorage.setItem(STARRED_KEY, JSON.stringify(starred));
-        displayStarredContacts();
-        loadContacts();
-    }
-
-    function isContactStarred(contactId) {
-        const starred = JSON.parse(localStorage.getItem(STARRED_KEY) || '[]');
-        return starred.includes(contactId);
-    }
-
-    function displayStarredContacts() {
-        const contacts = getContactsFromStorage();
-        const starred = JSON.parse(localStorage.getItem(STARRED_KEY) || '[]');
-        
-        const starredContacts = contacts.filter(c => starred.includes(c.id));
-        const starredContainer = $('#starredContainer');
-        const starredList = $('#starredList');
-        
-        starredList.empty();
-        
-        if (starredContacts.length === 0) {
-            starredContainer.hide();
-            return;
-        }
-
-        starredContacts.forEach(contact => {
-            const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder"></div>';
-            let detailsHtml = `<div class="starred-phone">${escapeHtml(contact.phone)}</div>`;
-            if (contact.email) {
-                detailsHtml += `<div class="starred-email">${escapeHtml(contact.email)}</div>`;
-            }
-
-            const contactHtml = `
-                <div class="starred-contact-item">
-                    <div class="starred-avatar">
-                        ${profilePic}
-                    </div>
-                    <div class="starred-info">
-                        <div class="starred-name">${escapeHtml(contact.name)}</div>
-                        ${detailsHtml}
-                    </div>
-                    <div class="starred-actions">
-                        <button class="btn-unstar" data-id="${contact.id}" title="Unstar">...</button>
-                        <button class="btn-edit" data-id="${contact.id}" title="Edit">...</button>
-                    </div>
-                </div>
-            `;
-            starredList.append(contactHtml);
-        });
-
-        // Attach listeners
-        starredList.find('.btn-unstar').on('click', function() {
-            toggleStar(parseInt($(this).data('id')));
-        });
-
-        starredList.find('.btn-edit').on('click', function() {
-            openEditModal(parseInt($(this).data('id')));
-        });
-
-        starredContainer.show();
-    }
-
-    // Toggle Emergency Contact
-    function toggleEmergency(contactId) {
-        let emergency = JSON.parse(localStorage.getItem(EMERGENCY_KEY) || '[]');
-        
-        if (emergency.includes(contactId)) {
-            emergency = emergency.filter(id => id !== contactId);
-        } else {
-            emergency.push(contactId);
-        }
-        
-        localStorage.setItem(EMERGENCY_KEY, JSON.stringify(emergency));
-        displayEmergencyContacts();
-        loadContacts();
-    }
-
-    function isContactEmergency(contactId) {
-        const emergency = JSON.parse(localStorage.getItem(EMERGENCY_KEY) || '[]');
-        return emergency.includes(contactId);
-    }
-
-    function displayEmergencyContacts() {
-        const contacts = getContactsFromStorage();
-        const emergency = JSON.parse(localStorage.getItem(EMERGENCY_KEY) || '[]');
-        
-        const emergencyContacts = contacts.filter(c => emergency.includes(c.id));
-        const emergencyContainer = $('#emergencyContainer');
-        const emergencyList = $('#emergencyList');
-        
-        emergencyList.empty();
-        
-        if (emergencyContacts.length === 0) {
-            emergencyContainer.hide();
-            return;
-        }
-
-        emergencyContacts.forEach(contact => {
-            const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder"></div>';
-            let detailsHtml = `<div class="emergency-phone">${escapeHtml(contact.phone)}</div>`;
-            if (contact.phone2) {
-                detailsHtml += `<div class="emergency-phone2">${escapeHtml(contact.phone2)}</div>`;
-            }
-
-            const contactHtml = `
-                <div class="emergency-contact-item">
-                    <div class="emergency-avatar">
-                        ${profilePic}
-                    </div>
-                    <div class="emergency-info">
-                        <div class="emergency-name">${escapeHtml(contact.name)}</div>
-                        ${detailsHtml}
-                    </div>
-                    <div class="emergency-actions">
-                        <button class="btn-remove-emergency" data-id="${contact.id}" title="Remove from emergency">...</button>
-                        <button class="btn-edit" data-id="${contact.id}" title="Edit">...</button>
-                    </div>
-                </div>
-            `;
-            emergencyList.append(contactHtml);
-        });
-
-        // Attach listeners
-        emergencyList.find('.btn-remove-emergency').on('click', function() {
-            toggleEmergency(parseInt($(this).data('id')));
-        });
-
-        emergencyList.find('.btn-edit').on('click', function() {
-            openEditModal(parseInt($(this).data('id')));
-        });
-
-        emergencyContainer.show();
-    }
-
-
-    // Display upcoming birthdays in next 5 days
-    function displayUpcomingBirthdays() {
-        try {
-            const upcomingContainer = $('#upcomingBirthdaysContainer');
-            const upcomingList = $('#upcomingBirthdaysList');
-            upcomingList.empty();
-
-            const contacts = getContactsFromStorage();
-            if (!contacts || !Array.isArray(contacts)) {
-                upcomingContainer.hide();
-                return;
-            }
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            const upcomingBirthdays = [];
-
-            contacts.forEach(contact => {
-                if (contact && contact.birthday) {
-                    const [year, month, day] = contact.birthday.split('-');
-                    if (year && month && day) {
-                        // Check if birthday is in the current year
-                        let nextBirthday = new Date(today.getFullYear(), parseInt(month) - 1, parseInt(day));
-                        if (nextBirthday < today) {
-                            // If birthday has passed this year, check next year
-                            nextBirthday = new Date(today.getFullYear() + 1, parseInt(month) - 1, parseInt(day));
-                        }
-
-                        const daysUntil = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
-
-                        // Include birthdays within next 5 days
-                        if (daysUntil >= 0 && daysUntil <= 5) {
-                            upcomingBirthdays.push({
-                                name: contact.name,
-                                id: contact.id,
-                                birthday: contact.birthday,
-                                daysUntil: daysUntil
-                            });
-                        }
-                    }
-                }
-            });
-
-            if (upcomingBirthdays.length > 0) {
-                // Sort by days until birthday
-                upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
-
-                upcomingBirthdays.forEach(bday => {
-                    const daysText = bday.daysUntil === 0 ? 'Today!' : `in ${bday.daysUntil} day${bday.daysUntil === 1 ? '' : 's'}`;
-                    const html = `
-                        <div class="birthday-item">
-                            <div class="birthday-info">
-                                <div class="birthday-name">${escapeHtml(bday.name)}</div>
-                                <div class="birthday-date">BD ${escapeHtml(bday.birthday)} - ${daysText}</div>
-                            </div>
-                            <button class="btn-edit-bday" data-id="${bday.id}" title="Edit">...</button>
-                        </div>
-                    `;
-                    upcomingList.append(html);
-                });
-
-                // Add edit listener
-                upcomingList.find('.btn-edit-bday').on('click', function() {
-                    openEditModal(parseInt($(this).data('id')));
-                });
-
-                upcomingContainer.show();
-            } else {
-                upcomingContainer.hide();
-            }
-        } catch (error) {
-            console.error('Error displaying upcoming birthdays:', error);
-            $('#upcomingBirthdaysContainer').hide();
-        }
-    }
-
-    // Close modal when clicking outside of it
-    $(window).on('click', function(e) {
-        const modal = $('#contactModal');
-        if (e.target === modal[0]) {
-            closeModal();
-        }
+        saveContacts();
+        renderContacts();
+
+        // After saving, show details for this contact
+        currentContactId = editingContactId;
+        openDetails(currentContactId);
     });
+
+    // --- Search ---
+    $searchInput.on('input', function () {
+        renderContacts();
+    });
+
+    // --- Keypad & recents ---
+    $('.keypad-key').on('click', function () {
+        const key = $(this).data('key');
+        if (!key) return;
+        $keypadDisplay.text($keypadDisplay.text() + key);
+    });
+
+    $('#btnBackspace').on('click', function () {
+        const current = $keypadDisplay.text();
+        $keypadDisplay.text(current.slice(0, -1));
+    });
+
+    function logCall(number) {
+        const trimmed = (number || '').trim();
+        if (!trimmed) return;
+        const contact = findContactByNumber(trimmed);
+        const entry = {
+            id: uid(),
+            number: trimmed,
+            contactId: contact ? contact.id : undefined,
+            type: 'outgoing',
+            timestamp: Date.now(),
+        };
+        recents.push(entry);
+        saveRecents();
+        renderRecents();
+    }
+
+    $('#btnCallFromKeypad').on('click', function () {
+        const number = $keypadDisplay.text();
+        if (!number.trim()) return;
+        logCall(number);
+        $keypadDisplay.text('');
+        alert('Simulated call to ' + number);
+    });
+
+    // --- Initial load ---
+    loadContacts();
+    loadRecents();
+    renderContacts();
+    renderRecents();
+
+    // Ensure initial visible screen and nav state
+    showScreen('screen-contacts');
+    setActiveBottomNav('screen-contacts');
 });
+
