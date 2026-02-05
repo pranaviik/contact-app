@@ -215,53 +215,73 @@ $(document).ready(function() {
                 
                 const isStarred = isContactStarred(contact.id);
                 const starClass = isStarred ? 'btn-star active' : 'btn-star';
-                const starText = '...';
-                
+                const starText = isStarred ? '★' : '☆';
+
                 const isEmergency = isContactEmergency(contact.id);
-                const emergencyClass = isEmergency ? 'btn-emergency active' : 'btn-emergency';
-                const emergencyText = '...';
-                
-                const displayName = isStarred ? ('★ ' + escapeHtml(contact.name)) : escapeHtml(contact.name);
+
                 const contactHtml = `
                     <div class="contact-item">
                         <div class="contact-avatar-wrapper">
                             ${profilePic}
                         </div>
                         <div class="contact-info">
-                            <div class="contact-name">${displayName}</div>
+                            <div class="contact-name">${escapeHtml(contact.name)}</div>
                             ${detailsHtml}
                         </div>
                         <div class="contact-actions">
                             <button class="${starClass}" data-id="${contact.id}" title="${isStarred ? 'Unstar' : 'Star'}">${starText}</button>
-                            <button class="${emergencyClass}" data-id="${contact.id}" title="${isEmergency ? 'Remove emergency' : 'Mark as emergency'}">${emergencyText}</button>
-                            <button class="btn-edit" data-id="${contact.id}" title="Edit">...</button>
-                            <button class="btn-delete" data-id="${contact.id}" title="Delete">...</button>
+                            <div class="kebab">
+                                <button class="btn-kebab" data-id="${contact.id}" title="More">⋮</button>
+                                <div class="kebab-menu" data-id="${contact.id}">
+                                    <button class="kebab-edit" data-id="${contact.id}" title="Edit">Edit</button>
+                                    <button class="kebab-delete" data-id="${contact.id}" title="Delete">Delete</button>
+                                    <button class="kebab-emergency" data-id="${contact.id}" title="${isEmergency ? 'Remove from emergency' : 'Add to emergency'}">${isEmergency ? 'Remove emergency' : 'Add to emergency'}</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
                 contactsList.append(contactHtml);
-                
+
                 // Star button listener
                 contactsList.find('.btn-star[data-id="' + contact.id + '"]').on('click', function(e) {
                     e.preventDefault();
                     toggleStar(contact.id);
                 });
-                
-                // Emergency button listener
-                contactsList.find('.btn-emergency[data-id="' + contact.id + '"]').on('click', function(e) {
+
+                // Kebab toggle
+                contactsList.find('.btn-kebab[data-id="' + contact.id + '"]').on('click', function(e) {
+                    e.stopPropagation();
+                    const id = $(this).data('id');
+                    $('.kebab-menu').not('[data-id="' + id + '"]').removeClass('open');
+                    const menu = $('.kebab-menu[data-id="' + id + '"]');
+                    menu.toggleClass('open');
+                });
+
+                // Menu actions
+                contactsList.find('.kebab-edit[data-id="' + contact.id + '"]').on('click', function(e) {
                     e.preventDefault();
-                    toggleEmergency(contact.id);
+                    openEditModal(parseInt($(this).data('id')));
+                    $('.kebab-menu').removeClass('open');
+                });
+
+                contactsList.find('.kebab-delete[data-id="' + contact.id + '"]').on('click', function(e) {
+                    e.preventDefault();
+                    deleteContact(parseInt($(this).data('id')));
+                    $('.kebab-menu').removeClass('open');
+                });
+
+                contactsList.find('.kebab-emergency[data-id="' + contact.id + '"]').on('click', function(e) {
+                    e.preventDefault();
+                    toggleEmergency(parseInt($(this).data('id')));
+                    $('.kebab-menu').removeClass('open');
                 });
             });
         });
 
-        // Attach event listeners to Edit and Delete buttons
-        $('.btn-edit').on('click', function() {
-            openEditModal(parseInt($(this).data('id')));
-        });
-
-        $('.btn-delete').on('click', function() {
-            deleteContact(parseInt($(this).data('id')));
+        // Close kebab menus when clicking outside
+        $(document).off('click.kebab').on('click.kebab', function() {
+            $('.kebab-menu').removeClass('open');
         });
     }
 

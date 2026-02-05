@@ -77,6 +77,16 @@ body {
 
 .contact-actions { display:flex; gap:8px; }
 .btn-star, .btn-emergency { background:transparent; border:1px solid #e6e9ee; padding:8px 10px; border-radius:8px; cursor:pointer; font-size:13px; color:#23303b; }
+.btn-star { font-size:18px; padding:6px 8px; border-radius:8px; }
+.btn-star.active { color:#0066cc; }
+
+/* Kebab menu (vertical three dots) */
+.kebab { position: relative; }
+.btn-kebab { background: transparent; border: none; font-size: 18px; padding: 6px 8px; cursor: pointer; color: #52606d; }
+.kebab-menu { display: none; position: absolute; right: 0; top: 36px; background: #ffffff; border: 1px solid #e6e9ee; border-radius: 8px; box-shadow: 0 6px 18px rgba(16,24,40,0.06); min-width: 160px; z-index: 60; }
+.kebab-menu.open { display: block; }
+.kebab-menu button { display: block; width: 100%; padding: 10px 12px; background: transparent; border: none; text-align: left; cursor: pointer; color: #0f1724; font-size: 14px; }
+.kebab-menu button:hover { background: #f6f8fb; }
 .btn-star.active { background:#eef6ff; border-color:#dbeafe; }
 .btn-emergency.active { background:#fff7f6; border-color:#fee2e2; }
 .btn-edit, .btn-delete, .btn-quick-edit, .btn-edit-bday { background:transparent; border:1px solid #e6e9ee; padding:8px 10px; border-radius:8px; cursor:pointer; font-size:13px; }
