@@ -145,13 +145,15 @@ body {
 }
 
 .section-header-row {
-    padding: 8px 18px 2px;
+    padding: 10px 18px 4px;
 }
 
 .section-title {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    color: #c8cad8;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #a5a7b6;
 }
 
 .favorites-section {
@@ -163,21 +165,21 @@ body {
 }
 
 .contacts-list .section-label {
-    padding: 4px 18px;
+    padding: 6px 18px 4px;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #6c6f80;
+    letter-spacing: 0.12em;
+    color: #70748a;
 }
 
 .contact-row {
     display: flex;
     align-items: center;
-    padding: 10px 18px;
+    padding: 11px 18px;
     gap: 12px;
     background: #15161b;
-    border-bottom: 1px solid #20222e;
+    border-bottom: 1px solid rgba(32, 34, 46, 0.7);
     cursor: pointer;
 }
 
@@ -212,12 +214,14 @@ body {
     font-size: 15px;
     font-weight: 500;
     color: #f9f9fb;
+    line-height: 1.25;
 }
 
 .contact-meta {
-    font-size: 13px;
-    color: #b0b2c0;
+    font-size: 12px;
+    color: #9da0b0;
     margin-top: 2px;
+    line-height: 1.35;
 }
 
 .favorite-star {
