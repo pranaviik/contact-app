@@ -644,7 +644,7 @@ $(function () {
         if (!number.trim()) return;
         logCall(number);
         $keypadDisplay.text('');
-        window.location.href='tel'+number;
+        window.location.href='tel:' + number;
     });
 
     // --- Initial load ---
