@@ -5,7 +5,7 @@ $(function () {
     const CONTACTS_KEY = 'contacts';
     const RECENTS_KEY = 'recents';
 
-    /** @type {Array<{id:string,name:string,phone:string,email?:string,address?:string,notes?:string,favorite?:boolean,emergency?:boolean}>} */
+    /** @type {Array<{id:string,name:string,phone:string,email?:string,address?:string,notes?:string,birthday?:string,favorite?:boolean,emergency?:boolean}>} */
     let contacts = [];
     /** @type {Array<{id:string,number:string,contactId?:string,type:string,timestamp:number}>} */
     let recents = [];
@@ -19,6 +19,8 @@ $(function () {
 
     const $favoritesSection = $('#favoritesSection');
     const $favoritesList = $('#favoritesList');
+    const $birthdaysSection = $('#birthdaysSection');
+    const $birthdaysList = $('#birthdaysList');
     const $contactsList = $('#contactsList');
     const $emptyContacts = $('#emptyContacts');
 
@@ -41,10 +43,12 @@ $(function () {
     const $detailsEmail = $('#detailsEmail');
     const $detailsAddress = $('#detailsAddress');
     const $detailsNotes = $('#detailsNotes');
+    const $detailsBirthday = $('#detailsBirthday');
     const $detailsPhoneRow = $('#detailsPhoneRow');
     const $detailsEmailRow = $('#detailsEmailRow');
     const $detailsAddressRow = $('#detailsAddressRow');
     const $detailsNotesRow = $('#detailsNotesRow');
+    const $detailsBirthdayRow = $('#detailsBirthdayRow');
     const $btnToggleFavorite = $('#btnToggleFavorite');
     const $btnToggleEmergency = $('#btnToggleEmergency');
 
@@ -56,6 +60,7 @@ $(function () {
     const $inputEmail = $('#inputEmail');
     const $inputAddress = $('#inputAddress');
     const $inputNotes = $('#inputNotes');
+    const $inputBirthday = $('#inputBirthday');
 
     // Keypad
     const $keypadDisplay = $('#keypadDisplay');
@@ -137,6 +142,56 @@ $(function () {
         return diffDay + ' days ago';
     }
 
+    // --- Birthday helpers ---
+    function formatBirthday(birthday) {
+        if (!birthday) return '';
+        try {
+            const date = new Date(birthday + 'T00:00:00');
+            const options = { month: 'long', day: 'numeric', year: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        } catch (e) {
+            return birthday;
+        }
+    }
+
+    function getUpcomingBirthdays() {
+        const today = new Date();
+        const thirtyDaysFromNow = new Date(today);
+        thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+        return contacts
+            .filter(c => c.birthday)
+            .map(c => {
+                const [year, month, day] = c.birthday.split('-').map(Number);
+                const currentYear = today.getFullYear();
+                
+                // Calculate next birthday occurrence
+                let nextBirthday = new Date(currentYear, month - 1, day);
+                
+                // If birthday already passed this year, use next year
+                if (nextBirthday < today) {
+                    nextBirthday = new Date(currentYear + 1, month - 1, day);
+                }
+                
+                const daysUntil = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
+                
+                return {
+                    contact: c,
+                    nextBirthday,
+                    daysUntil,
+                    monthDay: `${month}-${day}`
+                };
+            })
+            .filter(b => b.daysUntil >= 0 && b.daysUntil <= 30)
+            .sort((a, b) => a.daysUntil - b.daysUntil);
+    }
+
+    function formatDaysUntilBirthday(days) {
+        if (days === 0) return 'Today';
+        if (days === 1) return 'Tomorrow';
+        return `In ${days} days`;
+    }
+
     function findContactById(id) {
         return contacts.find(c => c.id === id) || null;
     }
@@ -173,12 +228,12 @@ $(function () {
         if (tab === 'contacts-list') {
             $tabButtons.removeClass('active');
             $(this).addClass('active');
-            $('#favoritesSection, #allContactsSection').removeClass('hidden');
+            $('#favoritesSection, #birthdaysSection, #allContactsSection').removeClass('hidden');
             $emergencySection.addClass('hidden');
         } else if (tab === 'emergency-list') {
             $tabButtons.removeClass('active');
             $(this).addClass('active');
-            $('#favoritesSection, #allContactsSection').addClass('hidden');
+            $('#favoritesSection, #birthdaysSection, #allContactsSection').addClass('hidden');
             $emergencySection.removeClass('hidden');
         }
     });
@@ -204,6 +259,19 @@ $(function () {
             });
         } else {
             $favoritesSection.addClass('hidden');
+        }
+
+        // Upcoming birthdays
+        const upcomingBirthdays = getUpcomingBirthdays();
+        $birthdaysList.empty();
+        if (upcomingBirthdays.length) {
+            $birthdaysSection.removeClass('hidden');
+            upcomingBirthdays.forEach(b => {
+                const $row = buildBirthdayRow(b);
+                $birthdaysList.append($row);
+            });
+        } else {
+            $birthdaysSection.addClass('hidden');
         }
 
         // All contacts with alphabetical headers
@@ -238,6 +306,35 @@ $(function () {
         } else {
             $emptyEmergency.removeClass('hidden');
         }
+    }
+
+    function buildBirthdayRow(birthdayData) {
+        const c = birthdayData.contact;
+        const initial = firstInitial(c.name);
+        
+        const $row = $('<div>').addClass('contact-row');
+        const $avatar = $('<div>')
+            .addClass('avatar')
+            .text(initial);
+        
+        const $text = $('<div>').addClass('contact-text');
+        const $name = $('<div>').addClass('contact-name').text(c.name);
+        const $meta = $('<div>')
+            .addClass('contact-meta')
+            .text(formatDaysUntilBirthday(birthdayData.daysUntil));
+        $text.append($name, $meta);
+        
+        const $icon = $('<div>')
+            .addClass('birthday-icon')
+            .text('🎂');
+        
+        $row.append($avatar, $text, $icon);
+        
+        $row.on('click', function () {
+            openDetails(c.id);
+        });
+        
+        return $row;
     }
 
     function matchesSearch(contact, q) {
@@ -349,6 +446,7 @@ $(function () {
         setRowValue($detailsEmailRow, $detailsEmail, contact.email);
         setRowValue($detailsAddressRow, $detailsAddress, contact.address);
         setRowValue($detailsNotesRow, $detailsNotes, contact.notes);
+        setRowValue($detailsBirthdayRow, $detailsBirthday, contact.birthday ? formatBirthday(contact.birthday) : '');
 
         syncDetailsFavoriteEmergency(contact);
 
@@ -426,6 +524,7 @@ $(function () {
         $inputEmail.val('');
         $inputAddress.val('');
         $inputNotes.val('');
+        $inputBirthday.val('');
     }
 
     function openEdit(contact) {
@@ -438,6 +537,7 @@ $(function () {
             $inputEmail.val(contact.email || '');
             $inputAddress.val(contact.address || '');
             $inputNotes.val(contact.notes || '');
+            $inputBirthday.val(contact.birthday || '');
         } else {
             resetEditForm();
         }
@@ -480,6 +580,7 @@ $(function () {
                 contact.email = $inputEmail.val().trim();
                 contact.address = $inputAddress.val().trim();
                 contact.notes = $inputNotes.val().trim();
+                contact.birthday = $inputBirthday.val().trim();
             }
         } else {
             const newContact = {
@@ -489,6 +590,7 @@ $(function () {
                 email: $inputEmail.val().trim(),
                 address: $inputAddress.val().trim(),
                 notes: $inputNotes.val().trim(),
+                birthday: $inputBirthday.val().trim(),
                 favorite: false,
                 emergency: false,
             };

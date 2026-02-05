@@ -45,6 +45,14 @@
                             <div id="favoritesList" class="list contacts-list"></div>
                         </section>
 
+                        <!-- Upcoming Birthdays section -->
+                        <section id="birthdaysSection" class="section birthdays-section hidden" aria-label="Upcoming Birthdays">
+                            <div class="section-header-row">
+                                <h2 class="section-title">Upcoming Birthdays</h2>
+                            </div>
+                            <div id="birthdaysList" class="list contacts-list"></div>
+                        </section>
+
                         <!-- All contacts (alphabetical) -->
                         <section id="allContactsSection" class="section" aria-label="All contacts">
                             <div id="contactsList" class="list contacts-list"></div>
@@ -125,6 +133,13 @@
                                     <div id="detailsNotes" class="details-value"></div>
                                 </div>
                             </div>
+                            <div class="details-row" id="detailsBirthdayRow">
+                                <div class="details-icon">🎂</div>
+                                <div class="details-info">
+                                    <div class="details-label">Birthday</div>
+                                    <div id="detailsBirthday" class="details-value"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -165,6 +180,10 @@
                                 <label for="inputNotes">Notes</label>
                                 <textarea id="inputNotes" placeholder="Enter notes" rows="4"></textarea>
                             </div>
+                            <div class="form-group">
+                                <label for="inputBirthday">Birthday</label>
+                                <input id="inputBirthday" type="date" placeholder="Select birthday">
+                            </div>
                         </form>
                     </div>
                 </section>
@@ -172,7 +191,7 @@
                 <!-- Keypad screen -->
                 <section id="screen-keypad" class="screen" aria-label="Keypad">
                     <header class="screen-header">
-                        <h1 class="screen-title">Dial</h1>
+                        <h1 class="screen-title">Enter number</h1>
                     </header>
 
                     <div class="screen-scroll keypad-scroll">

@@ -234,6 +234,16 @@ body {
     color: #e5a327;
 }
 
+.birthday-icon {
+    width: 24px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.birthdays-section {
+    margin-bottom: 8px;
+}
+
 .empty-state {
     padding: 40px 24px;
     text-align: center;
