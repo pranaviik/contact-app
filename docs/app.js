@@ -40,7 +40,7 @@ $(document).ready(function() {
         editingId = null;
         $('#modalTitle').text('Add Contact');
         $('#contactForm')[0].reset();
-        $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%234a4a4a" width="100" height="100"/%3E%3Ctext x="50" y="50" font-size="40" fill="%23888" text-anchor="middle" dy=".3em"%3E👤%3C/text%3E%3C/svg%3E');
+        $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23f0f0f0" width="100" height="100"/%3E%3Ccircle cx="50" cy="36" r="18" fill="%23d0d0d0"/%3E%3Crect x="20" y="62" width="60" height="20" rx="10" fill="%23d0d0d0"/%3E%3C/svg%3E');
         $('#contactModal').addClass('show');
     }
 
@@ -62,7 +62,7 @@ $(document).ready(function() {
             if (contact.picture) {
                 $('#profilePreview').attr('src', contact.picture);
             } else {
-                $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%234a4a4a" width="100" height="100"/%3E%3Ctext x="50" y="50" font-size="40" fill="%23888" text-anchor="middle" dy=".3em"%3E👤%3C/text%3E%3C/svg%3E');
+                $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23f0f0f0" width="100" height="100"/%3E%3Ccircle cx="50" cy="36" r="18" fill="%23d0d0d0"/%3E%3Crect x="20" y="62" width="60" height="20" rx="10" fill="%23d0d0d0"/%3E%3C/svg%3E');
             }
             $('#contactModal').addClass('show');
         }
@@ -73,7 +73,7 @@ $(document).ready(function() {
         $('#contactModal').removeClass('show');
         editingId = null;
         $('#contactForm')[0].reset();
-        $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%234a4a4a" width="100" height="100"/%3E%3Ctext x="50" y="50" font-size="40" fill="%23888" text-anchor="middle" dy=".3em"%3E👤%3C/text%3E%3C/svg%3E');
+        $('#profilePreview').attr('src', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23f0f0f0" width="100" height="100"/%3E%3Ccircle cx="50" cy="36" r="18" fill="%23d0d0d0"/%3E%3Crect x="20" y="62" width="60" height="20" rx="10" fill="%23d0d0d0"/%3E%3C/svg%3E');
     }
 
     // Save Contact
@@ -198,7 +198,7 @@ $(document).ready(function() {
             contactsList.append(html);
 
             groupedContacts[letter].forEach(contact => {
-                const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder">👤</div>';
+                const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder"></div>';
                 let detailsHtml = `<div class="contact-phone">${escapeHtml(contact.phone)}</div>`;
                 if (contact.phone2) {
                     detailsHtml += `<div class="contact-phone2">${escapeHtml(contact.phone2)}</div>`;
@@ -207,19 +207,19 @@ $(document).ready(function() {
                     detailsHtml += `<div class="contact-email">${escapeHtml(contact.email)}</div>`;
                 }
                 if (contact.location) {
-                    detailsHtml += `<div class="contact-location">📍 ${escapeHtml(contact.location)}</div>`;
+                    detailsHtml += `<div class="contact-location">${escapeHtml(contact.location)}</div>`;
                 }
                 if (contact.birthday) {
-                    detailsHtml += `<div class="contact-birthday">🎂 ${escapeHtml(contact.birthday)}</div>`;
+                    detailsHtml += `<div class="contact-birthday">${escapeHtml(contact.birthday)}</div>`;
                 }
                 
                 const isStarred = isContactStarred(contact.id);
                 const starClass = isStarred ? 'btn-star active' : 'btn-star';
-                const starText = isStarred ? '★' : '☆';
+                const starText = isStarred ? 'Unstar' : 'Star';
                 
                 const isEmergency = isContactEmergency(contact.id);
                 const emergencyClass = isEmergency ? 'btn-emergency active' : 'btn-emergency';
-                const emergencyText = isEmergency ? '🆘' : '☎️';
+                const emergencyText = isEmergency ? 'Emergency' : 'Mark Emergency';
                 
                 const contactHtml = `
                     <div class="contact-item">
@@ -459,7 +459,7 @@ $(document).ready(function() {
         }
 
         starredContacts.forEach(contact => {
-            const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder">👤</div>';
+            const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder"></div>';
             let detailsHtml = `<div class="starred-phone">${escapeHtml(contact.phone)}</div>`;
             if (contact.email) {
                 detailsHtml += `<div class="starred-email">${escapeHtml(contact.email)}</div>`;
@@ -475,7 +475,7 @@ $(document).ready(function() {
                         ${detailsHtml}
                     </div>
                     <div class="starred-actions">
-                        <button class="btn-unstar" data-id="${contact.id}">★</button>
+                        <button class="btn-unstar" data-id="${contact.id}">Unstar</button>
                         <button class="btn-edit" data-id="${contact.id}">Edit</button>
                     </div>
                 </div>
@@ -531,7 +531,7 @@ $(document).ready(function() {
         }
 
         emergencyContacts.forEach(contact => {
-            const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder">👤</div>';
+            const profilePic = contact.picture ? `<img class="contact-avatar" src="${contact.picture}" alt="Profile">` : '<div class="contact-avatar-placeholder"></div>';
             let detailsHtml = `<div class="emergency-phone">${escapeHtml(contact.phone)}</div>`;
             if (contact.phone2) {
                 detailsHtml += `<div class="emergency-phone2">${escapeHtml(contact.phone2)}</div>`;
@@ -547,7 +547,7 @@ $(document).ready(function() {
                         ${detailsHtml}
                     </div>
                     <div class="emergency-actions">
-                        <button class="btn-remove-emergency" data-id="${contact.id}" title="Remove from emergency">✕</button>
+                        <button class="btn-remove-emergency" data-id="${contact.id}" title="Remove from emergency">Remove</button>
                         <button class="btn-edit" data-id="${contact.id}">Edit</button>
                     </div>
                 </div>
@@ -617,11 +617,11 @@ $(document).ready(function() {
                 upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
 
                 upcomingBirthdays.forEach(bday => {
-                    const daysText = bday.daysUntil === 0 ? '🎉 Today!' : `in ${bday.daysUntil} day${bday.daysUntil === 1 ? '' : 's'}`;
+                    const daysText = bday.daysUntil === 0 ? 'Today!' : `in ${bday.daysUntil} day${bday.daysUntil === 1 ? '' : 's'}`;
                     const html = `
                         <div class="birthday-item">
                             <div class="birthday-info">
-                                <div class="birthday-name">🎂 ${escapeHtml(bday.name)}</div>
+                                <div class="birthday-name">${escapeHtml(bday.name)}</div>
                                 <div class="birthday-date">${escapeHtml(bday.birthday)} - ${daysText}</div>
                             </div>
                             <button class="btn-edit-bday" data-id="${bday.id}">Edit</button>
