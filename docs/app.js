@@ -555,4 +555,3 @@ $(function () {
     showScreen('screen-contacts');
     setActiveBottomNav('screen-contacts');
 });
-

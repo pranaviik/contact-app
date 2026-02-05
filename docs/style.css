@@ -52,8 +52,8 @@ body {
 }
 
 .screen-header {
-    padding: 16px 18px 8px;
-    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    padding: 16px 18px 12px;
+    padding-top: calc(24px + env(safe-area-inset-top, 0px));
     background: #15161b;
     border-bottom: 1px solid #252733;
     display: flex;
@@ -71,7 +71,7 @@ body {
 }
 
 .screen-title {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 500;
     color: #f9f9fb;
 }
@@ -138,6 +138,9 @@ body {
 
 .keypad-scroll {
     padding: 16px 0 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .section {
@@ -451,12 +454,15 @@ body {
 }
 
 .keypad-display {
-    min-height: 42px;
+    min-height: 80px;
     text-align: center;
     font-size: 26px;
     letter-spacing: 2px;
-    padding: 8px 24px 18px;
+    padding: 24px 24px 32px;
     color: #f5f5f7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .keypad-grid {
@@ -465,6 +471,7 @@ body {
     gap: 18px 30px;
     padding: 0 50px;
     justify-items: center;
+    margin-top: 16px;
 }
 
 .keypad-key {
@@ -625,4 +632,3 @@ body {
         right: 18px;
     }
 }
-
